@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#4F5337">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>N.A.E. — Never Alone Everywhere · Prototype interactif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ivory:#F5F0E6;--ivory2:#EBE4D4;--ink:#1D1E21;--anth:#222326;--anth2:#2C2E32;--anth3:#3A3C41;--goldT:#7A5F2B;--alert:#B82A16;--ok:#2B6548;--warn:#80530A;--muted:#66645F;--line:rgba(29,30,33,.16);
+--metal:linear-gradient(135deg,#8E7440,#E5D3A6 45%,#A98B55 70%,#F0E2BC);--bg:#F5F0E6;--fg:#1D1E21;--card:#FBF8F1;--ln:rgba(29,30,33,.16);--sub:#66645F;--accent:#7A5F2B}
+html,body{height:100%}
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:radial-gradient(circle at 20% 10%,#E9E2D2,#CFC7B5 60%,#B9B09C);color:var(--ink);font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+.stage{display:flex;gap:28px;justify-content:center;align-items:flex-start;padding:20px;min-height:100%}
+.phone{--bg:var(--ivory);--fg:var(--ink);--card:#FBF8F1;--sub:var(--muted);--ln:var(--line);--accent:var(--goldT);
+position:relative;flex:none;width:392px;height:min(840px,calc(100vh - 40px));background:var(--bg);color:var(--fg);border-radius:46px;border:10px solid #0f1012;box-shadow:0 30px 70px rgba(0,0,0,.35);overflow:hidden;display:flex;flex-direction:column}
+.phone[data-theme=dark],.dark{--bg:var(--anth);--fg:#F1ECE0;--card:var(--anth2);--sub:#B9B4A9;--ln:rgba(241,236,224,.18);--accent:#E5D3A6}
+.phone[data-platform=android]{border-radius:30px;font-family:Roboto,Inter,system-ui,sans-serif}
+.status{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;position:relative}
+.island{position:absolute;left:50%;top:9px;width:96px;height:26px;border-radius:20px;background:#0f1012;transform:translateX(-50%)}
+.phone[data-platform=android] .island{width:14px;height:14px;top:16px;border-radius:50%}
+.loc{flex:none;margin:0 16px 6px;padding:6px 10px;border-radius:10px;border:1px solid var(--ln);font-size:12px;display:flex;align-items:center;gap:6px;color:var(--sub)}
+.loc.on{border-color:var(--accent);color:var(--fg);background:rgba(169,139,85,.14)}
+.loc.warn{border-style:dashed;color:var(--warn)}
+.dark .loc.warn,.phone[data-theme=dark] .loc.warn{color:#F0C46B}
+.screen{flex:1;overflow-y:auto;padding:4px 18px 18px;scrollbar-width:thin}
+.tabbar{flex:none;display:flex;border-top:1px solid var(--ln);background:var(--bg);padding:6px 6px 4px}
+.tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;font-size:10.5px;color:var(--sub);border-radius:14px;min-height:48px}
+.tab[aria-current=page]{color:var(--fg);font-weight:600}
+.tab[aria-current=page] svg{stroke-width:2.2}
+.phone[data-platform=android] .tab[aria-current=page]{background:rgba(169,139,85,.2)}
+.phone[data-platform=ios] .tab[aria-current=page]::after{content:"";width:18px;height:2px;background:var(--metal);border-radius:2px}
+.homebar{flex:none;height:20px;display:flex;justify-content:center;align-items:center}
+.homebar i{display:block;width:120px;height:4px;border-radius:3px;background:var(--fg);opacity:.5}
+.phone[data-platform=android] .homebar i{width:70px}
+h1,h2,h3{font-weight:500}
+h1.serif{font-size:30px;line-height:1.1;font-weight:600}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);font-weight:600;margin:20px 0 8px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.grow{flex:1;min-width:0}
+.sub{color:var(--sub);font-size:13px}.small{font-size:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 16px;border-radius:14px;font-weight:600;background:var(--fg);color:var(--bg);width:100%;margin-top:8px;text-align:center}
+.btn.alert{background:var(--alert);color:#fff}
+.btn.gold{background:var(--metal);color:#1D1E21}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--fg)}
+.btn.sm{min-height:40px;width:auto;margin:0;padding:6px 14px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1.5px solid currentColor;white-space:nowrap}
+.chip.ok{color:var(--ok)}.chip.warn{color:var(--warn)}.chip.err{color:var(--alert);border-style:dashed}.chip.info{color:var(--accent)}.chip.mut{color:var(--sub)}
+.dark .chip.ok,.phone[data-theme=dark] .chip.ok{color:#7CD3A4}.dark .chip.warn,.phone[data-theme=dark] .chip.warn{color:#F0C46B}.dark .chip.err,.phone[data-theme=dark] .chip.err{color:#FF8E7A}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{padding:7px 12px;border-radius:99px;border:1px solid var(--ln);font-size:13px;min-height:36px}
+.fchip[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.banner{display:flex;gap:10px;padding:11px 12px;border-radius:14px;border:1.5px solid;margin-bottom:8px;font-size:13px}
+.banner.warn{border-color:var(--warn);color:var(--warn);background:rgba(128,83,10,.08)}
+.banner.err{border-color:var(--alert);color:var(--alert);border-style:dashed;background:rgba(184,42,22,.07)}
+.banner.info{border-color:var(--accent);background:rgba(169,139,85,.12)}
+.banner b{display:block}
+.sw{position:relative;width:50px;height:30px;border-radius:20px;border:1.5px solid var(--fg);flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--fg);transition:.2s}
+.sw[aria-checked=true]{background:var(--fg)}.sw[aria-checked=true]::after{left:23px;background:var(--bg)}
+.sw[aria-checked=true]::before{content:"I";position:absolute;left:10px;top:3px;font-size:11px;font-weight:700;color:var(--bg)}
+.sw[aria-checked=false]::before{content:"O";position:absolute;right:9px;top:3px;font-size:11px;font-weight:700;color:var(--fg)}
+.line{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln)}.line:last-child{border:0}
+.gauge{width:84px;height:84px;position:relative;flex:none}
+.gauge b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600}
+.jbtn{width:150px;height:150px;border-radius:50%;margin:10px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative;background:var(--metal);color:#1D1E21;font-weight:600;touch-action:none;user-select:none;box-shadow:inset 0 2px 6px rgba(255,255,255,.6),0 10px 24px rgba(0,0,0,.25)}
+.jbtn svg.ring{position:absolute;inset:-8px;width:166px;height:166px;transform:rotate(-90deg);pointer-events:none}
+.jbtn small{font-weight:500;font-size:11px;text-align:center;padding:0 18px}
+.layer{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;background:var(--bg);color:var(--fg)}
+.layer .body{flex:1;overflow-y:auto;padding:56px 20px 20px}
+.sheetwrap{position:absolute;inset:0;z-index:30;background:rgba(10,10,12,.5);display:flex;align-items:flex-end}
+.sheet{width:100%;max-height:88%;overflow-y:auto;background:var(--bg);color:var(--fg);border-radius:26px 26px 0 0;padding:10px 20px 26px;animation:up .25s}
+.sheet .grab{width:44px;height:4px;border-radius:3px;background:var(--ln);margin:0 auto 12px}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.notif{position:absolute;left:10px;right:10px;top:50px;z-index:40;background:rgba(251,248,241,.97);color:#1D1E21;border-radius:20px;padding:12px 14px;box-shadow:0 12px 30px rgba(0,0,0,.35);animation:down .35s;text-align:left;width:calc(100% - 20px);border:1px solid rgba(0,0,0,.1)}
+.phone[data-platform=android] .notif{border-radius:16px}
+@keyframes down{from{transform:translateY(-70px);opacity:0}}
+.toast{position:absolute;left:20px;right:20px;bottom:90px;z-index:60;background:#1D1E21;color:#F5F0E6;padding:12px 14px;border-radius:14px;font-size:14px;text-align:center;animation:up .2s}
+.coach{position:absolute;left:10px;right:10px;bottom:84px;z-index:50;background:#1D1E21;color:#F5F0E6;border:1.5px solid #D8C493;border-radius:18px;padding:12px 14px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.coach .btn{background:var(--metal);color:#1D1E21}
+.coach .btn.ghost{background:transparent;color:#F5F0E6;border-color:#F5F0E6}
+.fab{display:none;position:fixed;right:14px;bottom:14px;z-index:100;background:#1D1E21;color:#F5F0E6;padding:12px 18px;border-radius:99px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.4);border:1px solid #D8C493}
+.panel{flex:none;width:340px;max-height:calc(100vh - 40px);overflow-y:auto;background:#FBF8F1;border-radius:24px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.panel h2{margin-top:16px}
+.panel .seg{display:flex;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden}
+.panel .seg button{flex:1;padding:9px 4px;font-size:13px;min-height:40px}
+.panel .seg button[aria-pressed=true]{background:var(--ink);color:#F5F0E6;font-weight:600}
+.panel .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;width:100%;text-align:left}
+.scn{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;background:#fff8}
+.scn b{display:block;font-size:14px}.scn span{font-size:12px;color:var(--muted)}
+.scn .btn{margin-top:8px}
+.spin{width:96px;height:96px;border-radius:50%;border:5px dashed var(--accent);animation:rot 2s linear infinite;margin:18px auto}
+@keyframes rot{to{transform:rotate(360deg)}}
+.badge{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:18px auto;border:4px solid}
+.badge.ok{border-color:#7CD3A4;color:#7CD3A4}.badge.err{border-color:#FF8E7A;color:#FF8E7A;border-style:dashed;border-radius:18px}
+.badge.mut{border-color:var(--sub);color:var(--sub)}
+.buzz{animation:buzz .25s 3}
+@keyframes buzz{25%{transform:translateX(-3px) rotate(-3deg)}75%{transform:translateX(3px) rotate(3deg)}}
+.hap{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--ln);border-radius:14px;font-size:13px;margin:10px 0}
+.step3{display:grid;gap:8px}
+.st{border:1.5px solid var(--ln);border-radius:16px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.st.active{border-color:var(--accent);background:rgba(229,211,166,.1)}
+.st.done{border-style:solid;border-color:#7CD3A4}
+.st .n{width:28px;height:28px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-weight:600;flex:none;font-size:13px}
+.mapbox{border-radius:18px;overflow:hidden;border:1px solid var(--ln);background:#E8E0CE}
+.pin{cursor:pointer}.pin:focus{outline:none}.pin:focus circle.r,.pin:hover circle.r{stroke-width:4}
+.bar{height:8px;border-radius:5px;background:var(--ln);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.prod{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard{border:1px solid var(--ln);border-radius:18px;padding:10px;background:var(--card);min-width:0}.ill{position:absolute;left:8px;bottom:6px;font-size:10px;font-style:normal;color:var(--sub)}.ph{position:relative;overflow:hidden}.pimg{width:100%;height:100%;object-fit:cover;display:block}.ilw{background:rgba(251,248,241,.88);padding:2px 6px;border-radius:6px;color:#1D1E21}
+.ph{aspect-ratio:1;border-radius:12px;background:radial-gradient(circle at 30% 25%,#FFFDF6,#EDE7D8);display:flex;align-items:center;justify-content:center;margin-bottom:8px;overflow:hidden}
+.fin{width:36px;height:36px;border-radius:50%;border:2px solid transparent;outline:1px solid var(--ln);outline-offset:2px}.fin[aria-pressed=true]{border-color:var(--fg)}
+.stepper{display:flex;gap:4px;margin:8px 0}
+.stepper div{flex:1;text-align:center;font-size:10px;padding-top:6px;border-top:4px solid var(--ln);color:var(--sub)}
+.stepper div.done{border-top-color:var(--accent);color:var(--fg)}
+.stepper div.cur{border-top-color:var(--fg);color:var(--fg);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--ln);vertical-align:top}th{color:var(--sub);font-weight:600}
+.modalwrap{position:fixed;inset:0;z-index:200;background:rgba(10,10,12,.6);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#FBF8F1;color:#1D1E21;border-radius:22px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:22px}
+.modal h3{font-size:20px;margin-bottom:8px}.modal h4{margin:14px 0 4px;font-size:14px}.modal ul{padding-left:18px;font-size:14px}.modal li{margin:3px 0}.modal code{background:#EBE4D4;padding:1px 5px;border-radius:5px;font-size:12px}
+.modal pre{background:#222326;color:#F1ECE0;padding:10px;border-radius:10px;font-size:12px;overflow-x:auto;margin:6px 0}
+.fresh{animation:flash 1.2s 3}
+@keyframes flash{50%{box-shadow:0 0 0 4px var(--alert)}}
+.logo-ban{display:block;width:100%;height:auto;aspect-ratio:520/190;border-radius:16px;margin-top:6px}.logo-sm{display:block;height:40px;width:auto;aspect-ratio:520/190;border-radius:8px}
+.phone[data-theme=khaki]{--bg:#4F5337;--fg:#F5F0E6;--card:#5E6342;--sub:#DAD4B6;--ln:rgba(216,196,147,.34);--accent:#E5D3A6}
+.phone[data-theme=khaki] .btn:not(.gold):not(.alert):not(.ghost){background:#F5F0E6;color:#3E4029}
+.phone[data-theme=khaki] .jbtn{box-shadow:inset 0 2px 6px rgba(255,255,255,.5),0 10px 24px rgba(0,0,0,.35)}
+.phone[data-theme=olive],.phone[data-theme=khaki]{--ok:#7CD3A4}
+.phone[data-theme=olive] .chip.warn,.phone[data-theme=khaki] .chip.warn,.phone[data-theme=olive] .banner.warn,.phone[data-theme=khaki] .banner.warn,.phone[data-theme=olive] .loc.warn,.phone[data-theme=khaki] .loc.warn{color:#F0C46B;border-color:#F0C46B}
+.phone[data-theme=olive] .chip.ok,.phone[data-theme=khaki] .chip.ok{color:#7CD3A4}
+.phone[data-theme=olive] .chip.err,.phone[data-theme=khaki] .chip.err,.phone[data-theme=olive] .banner.err,.phone[data-theme=khaki] .banner.err{color:#FF9A88;border-color:#FF9A88}
+.phone[data-theme=olive]{--bg:#4B4C30;--fg:#F4ECD6;--card:#585A3A;--sub:#D5CEAE;--ln:rgba(216,196,147,.32);--accent:#E5D3A6}
+.halo{transform-box:fill-box;transform-origin:center;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(.9);opacity:.55}50%{transform:scale(1.12);opacity:1}}
+.cmap{border-radius:18px;overflow:hidden;border:1px solid var(--ln);background:#3E3F26}
+.cmap .pin:focus circle.hit,.cmap .pin:hover circle.hit{stroke:#E5D3A6;stroke-width:2}
+.fld{display:block;margin:10px 0 0}.fld span{display:block;font-size:13px;color:var(--sub);margin-bottom:4px}
+.fld input{width:100%;min-height:48px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--ln);background:var(--card);color:var(--fg);font:inherit;font-size:16px}
+.fld input::placeholder{color:var(--sub);opacity:.7}
+.cartbtn{position:relative;width:46px;height:46px;border-radius:50%;border:1.5px solid var(--fg);display:flex;align-items:center;justify-content:center;flex:none}
+.cartbtn b{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#E5D3A6;color:#1D1E21;font-size:12px;display:flex;align-items:center;justify-content:center}
+.crow{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln)}.crow img{width:68px;height:68px;border-radius:12px;object-fit:cover;flex:none}
+.qty{display:inline-flex;align-items:center;border:1.5px solid var(--fg);border-radius:12px;overflow:hidden}.qty button{width:40px;height:40px;font-size:20px}.qty span{min-width:30px;text-align:center;font-weight:600}
+.welcome{position:absolute;inset:0;z-index:45;background:rgba(28,30,16,.62);display:flex;align-items:center;justify-content:center;padding:22px}
+.wcard{width:100%;background:var(--bg);color:var(--fg);border:1.5px solid #E5D3A6;border-radius:26px;padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.wcard .logo-ban{margin:0 0 12px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:34px;letter-spacing:.18em;font-weight:600}
+.metal{background:var(--metal);-webkit-background-clip:text;background-clip:text;color:transparent}
+:focus-visible{outline:3px solid #2A6FDB;outline-offset:2px}
+@media(max-width:940px){.panel{position:fixed;left:8px;right:8px;bottom:8px;width:auto;max-height:78vh;z-index:150;transform:translateY(120%);transition:.3s;visibility:hidden}.panel.open{transform:none;visibility:visible}.fab{display:block}.stage{padding:10px}}
+@media(max-width:520px){.fab{bottom:92px;right:10px;padding:8px 14px;font-size:13px}.stage{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0!important}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== Palette kaki unifiée ===== */
+:root{--bg:#4F5337;--fg:#F5F0E6;--card:#5E6342;--sub:#DAD4B6;--ln:rgba(216,196,147,.34);--accent:#E5D3A6;--win:#43472D;--fld:#41452C;--line:rgba(216,196,147,.34);--muted:#DAD4B6;--ok:#7CD3A4;--warn:#F0C46B}
+.phone[data-theme=khaki]{--win:#43472D;--fld:#41452C}
+.layer.dark,.sheet.dark{--bg:#454A2F;--card:#575C3D;--fld:#3E4229}
+body{background:radial-gradient(circle at 20% 10%,#5C6140,#3B3F28 60%,#2A2D1C);color:#F5F0E6}
+.tabbar{background:var(--win)}
+.sheet,.wcard{background:var(--win)}
+.notif{background:#5E6342;color:#F5F0E6;border:1px solid rgba(229,211,166,.55)}
+.toast,.coach,.fab{background:#3A3E26;color:#F5F0E6;border:1px solid #E5D3A6}
+.panel{background:var(--win);color:#F5F0E6;border:1px solid var(--ln)}
+.panel .seg{border-color:var(--fg)}.panel .seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.panel .opt{border-bottom-color:var(--ln)}.scn{background:rgba(255,255,255,.05);border-color:var(--ln)}.scn span{color:var(--sub)}
+.modal{background:var(--win);color:#F5F0E6;border:1px solid #E5D3A6}.modal code{background:rgba(0,0,0,.28)}.modal pre{background:#2E3120}
+.fld input{background:var(--fld)}
+.ph{background:radial-gradient(circle at 30% 25%,#62674A,#3F432B)}
+.ill{color:var(--sub)}.ilw{background:rgba(63,67,43,.88);color:#F5F0E6}
+.mapbox{background:#3E4228;border-color:var(--ln)}
+.btn.sm[disabled]{opacity:.5}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone" id="phone"></div>
+  <aside class="panel" id="panel" aria-label="Panneau de démonstration"></aside>
+</div>
+<button class="fab" data-a="panel" aria-label="Ouvrir ou fermer le panneau démo">Démo</button>
+<div id="modalroot"></div>
+
+<script>
+"use strict";
+/* ============ Utilitaires ============ */
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const T0=Date.now(), BASE=18*3600+15*60;
+const simSec=()=>BASE+Math.floor((Date.now()-T0)/1000);
+const evSec=()=>simSec()+5*3600; // horloge de la console (soirée)
+const hm=s=>pad(Math.floor((s%86400)/3600))+':'+pad(Math.floor((s%3600)/60));
+const hms=s=>hm(s)+':'+pad(s%60);
+let uidn=100;const uid=p=>p+(++uidn);
+
+/* ============ Icônes ============ */
+const P={
+home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
+gem:'<path d="M6 3h12l3 6-9 12L3 9zM3 9h18M9 3l3 6 3-6M12 9v12"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+bt:'<path d="M7 7l10 10-5 4V3l5 4L7 17"/>',
+wifioff:'<path d="M2 8c5-4 15-4 20 0M5 12c3-3 11-3 14 0M9 16c2-1 4-1 6 0M3 3l18 18"/>',
+pin:'<path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+pinoff:'<path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><path d="M3 3l18 18"/>',
+shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',
+check:'<path d="M5 12l5 5 9-10"/>',
+alert:'<path d="M12 3l10 18H2zM12 10v5M12 18h.01"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+vib:'<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4 8v8M20 8v8M2 10v4M22 10v4"/>',
+chev:'<path d="M9 6l6 6-6 6"/>',
+back:'<path d="M15 6l-6 6 6 6"/>',
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c3 0 5 1.5 5 5"/>',
+list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+play:'<path d="M7 4l13 8-13 8z"/>',
+refresh:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>',
+flag:'<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>',
+band:'<ellipse cx="12" cy="12" rx="9" ry="5"/><ellipse cx="12" cy="12" rx="6" ry="2.6"/>',
+power:'<path d="M12 3v9M6.5 6.5a8 8 0 1 0 11 0"/>',
+cart:'<circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M3 4h2.5l2.4 11h10.3l2-8H6.3"/>',
+sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+bars3:'<path d="M5 20v-5M11 20v-9M17 20V5"/>',bars2:'<path d="M5 20v-5M11 20v-9" /><path d="M17 20V5" opacity=".25"/>',bars1:'<path d="M5 20v-5"/><path d="M11 20v-9M17 20V5" opacity=".25"/>'
+};
+const ic=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
+const chip=(kind,icon,txt)=>`<span class="chip ${kind}">${ic(icon,13)}${txt}</span>`;
+
+/* ============ Données fictives ============ */
+const EVENTS=[
+{id:'ev1',name:'Nuit Électro',type:'Boîte de nuit',date:'2026-11-14',dateLbl:'Sam. 14 nov.',hours:'23:00 – 05:00',venue:'Les Docks',addr:'12 quai des Brumes (fictif)',x:96,y:150,total:500,avail:312},
+{id:'ev2',name:'Festival Lumières d’Hiver',type:'Festival',date:'2026-11-20',dateLbl:'20–22 nov.',hours:'14:00 – 01:00',venue:'Parc des Expositions',addr:'Esplanade Nord (fictif)',x:270,y:90,total:2000,avail:1480},
+{id:'ev3',name:'Concert Orchestre Nova',type:'Concert',date:'2026-11-13',dateLbl:'Ven. 13 nov.',hours:'20:00 – 23:00',venue:'Salle Aurore',addr:'3 place du Théâtre (fictif)',x:180,y:200,total:300,avail:120},
+{id:'ev4',name:'Soirée Jazz au Phare',type:'Concert',date:'2026-11-09',dateLbl:'Aujourd’hui',hours:'20:30 – 00:30',venue:'Le Phare',addr:'8 rue du Port (fictif)',x:70,y:262,total:150,avail:64},
+{id:'ev5',name:'Club Velvet',type:'Boîte de nuit',date:'2026-11-15',dateLbl:'Dim. 15 nov.',hours:'22:00 – 04:00',venue:'Velvet',addr:'21 rue des Orfèvres (fictif)',x:300,y:235,total:400,avail:210},
+{id:'ev6',name:'Festival Sous les Étoiles',type:'Festival',date:'2026-12-05',dateLbl:'5–7 déc.',hours:'15:00 – 00:00',venue:'Domaine du Lac',addr:'Route du Lac (fictif)',x:235,y:300,total:3000,avail:2950}
+];
+const FINISHES=[{id:'argent',name:'Argentée',c1:'#F6F6F4',c2:'#8A8D93'},{id:'dore',name:'Dorée',c1:'#F2E2B5',c2:'#A8854A'}];
+const CATS=['Boucles d’oreilles','Colliers','Bagues','Bracelets'];
+const PRODUCTS=[
+{id:'halo',photo:'assets/photos/halo.jpg',cat:'Boucles d’oreilles',name:'Créoles Halo',fin:'argent',finLbl:'Argentées',price:30,desc:'Des créoles fines et légères, au dessin épuré.'},
+{id:'eclat',photo:'assets/photos/eclat.jpg',cat:'Boucles d’oreilles',name:'Puces Éclat',fin:'dore',finLbl:'Dorées',price:35,desc:'Des puces discrètes, à porter au quotidien.'},
+{id:'ligne',photo:'assets/photos/ligne.jpg',cat:'Colliers',name:'Collier Ligne',fin:'argent',finLbl:'Chaîne fine argentée',price:45,desc:'Une chaîne fine, sobre, qui se porte seule ou en superposition.'},
+{id:'luna',photo:'assets/photos/luna.jpg',cat:'Colliers',name:'Collier Luna',fin:'dore',finLbl:'Pendentif rond doré',price:55,desc:'Un pendentif rond doré sur chaîne fine.'},
+{id:'onde',photo:'assets/photos/onde.jpg',cat:'Bagues',name:'Bague Onde',fin:'argent',finLbl:'Anneau fin argenté',price:35,desc:'Un anneau fin argenté, minimaliste.'},
+{id:'aura',photo:'assets/photos/aura.jpg',cat:'Bagues',name:'Bague Aura',fin:'dore',finLbl:'Anneau bombé doré',price:45,desc:'Un anneau bombé doré, au volume doux.'},
+{id:'lien',photo:'assets/photos/lien.jpg',cat:'Bracelets',name:'Bracelet Lien',fin:'dore',finLbl:'Chaîne fine dorée',price:49,desc:'Une chaîne fine dorée, légère au poignet.'},
+{id:'horizon',photo:'assets/photos/horizon.jpg',cat:'Bracelets',name:'Bracelet Horizon',fin:'argent',finLbl:'Jonc argenté',price:60,desc:'Un jonc argenté, ligne nette et continue.'}];
+const STYLES=['Tous',...CATS];
+const AGENTS={lina:'Lina M.',karim:'Karim B.',sofia:'Sofia D.'};
+const HAP={
+sending:{n:'1 vibration courte',d:'envoi en cours',pat:[80]},
+received:{n:'2 vibrations courtes',d:'alerte reçue par le système',pat:[80,100,80]},
+fail:{n:'3 vibrations longues',d:'échec d’envoi',pat:[400,120,400,120,400]},
+long:{n:'2 vibrations moyennes',d:'pression prolongée détectée',pat:[250,100,250]},
+cancel:{n:'1 vibration longue',d:'alerte annulée',pat:[500]},
+paired:{n:'1 vibration douce',d:'bijou associé',pat:[120]}};
+const CITY_ALERTS=[
+{id:'c1',lvl:'place',ex:1,x:192,y:168,r:13,min:4,st:'Alerte active',name:'Bar Le Comptoir des Quais (fictif)',type:'Bar',addr:'12 quai de la Presqu’île (adresse fictive), Lyon 2e',q:'Presqu’île',prec:'Lieu identifié · environ ±15 m (simulé)',tag:'Lieu identifié'},
+{id:'c2',lvl:'park',ex:2,x:314,y:58,ex_:262,ey:98,r:27,min:9,st:'Aidants prévenus',name:'Grand parc urbain (fictif)',type:'Parc',addr:'Entrée publique nord, rue du Parc (fictive)',q:'Nord-est de Lyon',prec:'Position estimée dans le parc · environ ±150 m (simulé)',tag:'Entrée + zone estimée'},
+{id:'c3',lvl:'zone',ex:3,x:160,y:92,r:46,min:15,st:'Alerte active',q:'Croix-Rousse',prec:'Zone du quartier · environ ±500 m (simulé)',tag:'Position approximative'},
+{id:'c4',lvl:'place',x:292,y:218,r:13,min:23,st:'Personnel du lieu prévenu',name:'Salle Aurore (fictive)',type:'Salle de concert',addr:'3 place du Théâtre (adresse fictive), Lyon 3e',q:'Part-Dieu',prec:'Lieu identifié · environ ±20 m (simulé)',tag:'Lieu identifié'}];
+const relMin=a=>a.min+Math.floor((simSec()-BASE)/60);
+const SAFEPTS=[{n:'Pharmacie de garde (ouverte)',d:'120 m'},{n:'Café ouvert jusqu’à 2 h',d:'180 m'},{n:'Hall de gare (éclairé, personnel présent)',d:'250 m'}];
+
+/* ============ État ============ */
+function initial(){
+ return {
+ platform:'ios',role:'porteur',tab:'home',agentTab:'alerts',panelOpen:false,
+ session:null,user:null,auth:null,form:{},formErr:null,cart:[],cartView:null,order:null,orders:0,onboarded:true,onbStep:0,pairing:'idle',onbTested:false,permNotif:true,permLoc:true,
+ jewel:{battery:78,name:'Aura · NAE-7F2'},
+ sim:{lowBattery:false,ble:false,network:false,gps:false},
+ testMode:false,
+ prefs:{helper:true,radius:500,nearby:true,updates:true,loc:'alert_map'},
+ flow:null,call:null,haptic:null,notif:null,sheet:null,toast:null,
+ alerts:[
+  {id:'H1',kind:'short',mine:true,test:true,status:'sent',date:'12 oct.',time:'19:02',zone:{precise:'Place du Marché (position simulée)',approx:'Centre-ville · ~300 m'},helpers:0,responders:0},
+  {id:'H2',kind:'short',mine:true,test:false,status:'cancelled',date:'3 oct.',time:'23:41',zone:{precise:'Rue des Lilas (position simulée)',approx:'Quartier Lilas · ~300 m'},helpers:3,responders:1},
+  {id:'H3',kind:'short',mine:true,test:false,status:'resolved',date:'21 sept.',time:'22:10',zone:{precise:'Avenue de la Gare (position simulée)',approx:'Gare · ~300 m'},helpers:4,responders:2}],
+ mapFilter:{date:'all',type:'all'},prodFilter:'Tous',
+ events:EVENTS,
+ bracelets:[
+  {id:'B-0412',state:'active',event:'ev1',holder:'anon',cycles:0,progress:0,log:[['22:41','Activé à l’entrée — Nuit Électro']]},
+  {id:'B-0413',state:'active',event:'ev1',holder:'app',cycles:0,progress:0,log:[['22:44','Activé et associé à un porteur (identité masquée)']]},
+  {id:'B-0414',state:'available',event:null,holder:null,cycles:0,progress:-1,log:[]},
+  {id:'B-0415',state:'available',event:null,holder:null,cycles:2,progress:3,log:[['—','Restitué, désinfecté, remis à disposition (cycle 2)']]},
+  {id:'B-0416',state:'returned',event:null,holder:null,cycles:1,progress:3,log:[['22:58','Restitué à la sortie — désassocié']]},
+  {id:'B-0417',state:'available',event:null,holder:null,cycles:0,progress:-1,log:[]}],
+ evAlerts:[],assoc:false,
+ opsLog:[{ts:'22:30:05',who:'Sofia D.',txt:'Prise de service — Nuit Électro',k:'info'},{ts:'22:41:12',who:'Système',txt:'Bracelet B-0412 activé (entrée A)',k:'info'},{ts:'22:44:40',who:'Système',txt:'Bracelet B-0413 activé (entrée A)',k:'info'}],
+ agentView:'lina',agentFilter:'all',braceletSel:null,
+ scenario:null,modal:null,story:false
+ };
+}
+let state=initial();
+const timers=[];const later=(ms,fn)=>{const t=setTimeout(fn,ms);timers.push(t);return t};
+let cancelTimer=null,callTimer=null,toastTimer=null;
+function clearAll(){timers.splice(0).forEach(clearTimeout);clearInterval(cancelTimer);clearInterval(callTimer);clearTimeout(toastTimer);cancelTimer=callTimer=toastTimer=null}
+
+/* ============ Dérivés ============ */
+const battery=()=>state.sim.lowBattery?12:state.jewel.battery;
+const connected=()=>!state.sim.ble;
+const lastSync=()=>state.sim.ble?'il y a 14 min':'il y a 2 min';
+const alertById=id=>state.alerts.find(a=>a.id===id);
+const evById=id=>state.events.find(e=>e.id===id);
+const brById=id=>state.bracelets.find(b=>b.id===id);
+const evAvail=e=>e.avail-state.bracelets.filter(b=>b.state!=='available'&&b.state!=='returned'&&b.event===e.id).length;
+function zoneFor(){ if(state.sim.gps||state.prefs.loc==='never') return null;
+ return {precise:'Rue du Louvre, devant le n° 14 (position simulée)',approx:'Quartier des Halles · rayon ~300 m (simulé)'}; }
+function locStatus(){
+ if(state.sim.gps) return {k:'warn',i:'pinoff',t:'Position inaccessible — les alertes partent sans position'};
+ if(state.prefs.loc==='never') return {k:'',i:'pinoff',t:'Position désactivée par vos réglages'};
+ const act=state.alerts.some(a=>a.mine&&['sending','sent'].includes(a.status)&&!a.date);
+ if(act||(state.flow&&state.flow.type!=='notx')) return {k:'on',i:'pin',t:'Position utilisée : alerte en cours (simulée)'};
+ if(state.role==='aidant'&&state.prefs.helper) return {k:'on',i:'pin',t:'Position approximative utilisée : réception des alertes proches'};
+ if(state.tab==='map'&&state.prefs.loc==='alert_map'&&state.role!=='agent') return {k:'on',i:'pin',t:'Position approximative utilisée : carte'};
+ return {k:'',i:'pin',t:'Position non utilisée en ce moment'};
+}
+function haptic(p){state.haptic={p,id:uid('h')};try{navigator.vibrate&&navigator.vibrate(HAP[p].pat)}catch(e){}}
+function toast(msg){state.toast=msg;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{state.toast=null;render()},2200)}
+
+/* ============ Rendu : briques ============ */
+function battGauge(pct){
+ const r=36,c=2*Math.PI*r,low=pct<=20;
+ return `<div class="gauge" role="img" aria-label="Batterie ${pct} pour cent${low?', faible':''}"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="${r}" fill="none" stroke="var(--ln)" stroke-width="6"/><circle cx="42" cy="42" r="${r}" fill="none" stroke="${low?'var(--alert)':'var(--accent)'}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c*pct/100} ${c}" transform="rotate(-90 42 42)" ${low?'stroke-dashoffset="0"':''}/></svg><b>${pct}%</b></div>`;
+}
+function jewelSvg(id,fin,size=120){
+ const f=FINISHES.find(x=>x.id===fin)||FINISHES[0];const g='g'+(++uidn);
+ const defs=`<defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${f.c1}"/><stop offset=".5" stop-color="${f.c2}"/><stop offset="1" stop-color="${f.c1}"/></linearGradient></defs>`;
+ const S=`stroke="url(#${g})" fill="none" stroke-linecap="round"`,F=`fill="url(#${g})"`;
+ const B={
+ halo:`<circle cx="38" cy="62" r="22" ${S} stroke-width="4"/><circle cx="82" cy="62" r="22" ${S} stroke-width="4"/>`,
+ eclat:`<circle cx="38" cy="60" r="11" ${F}/><circle cx="82" cy="60" r="11" ${F}/><path d="M38 52v16M30 60h16M82 52v16M74 60h16" stroke="#fff8" stroke-width="1.2"/>`,
+ ligne:`<path d="M20 28 Q60 100 100 28" ${S} stroke-width="2" stroke-dasharray="3 1.5"/>`,
+ luna:`<path d="M22 24 Q60 82 98 24" ${S} stroke-width="2" stroke-dasharray="3 1.5"/><circle cx="60" cy="78" r="14" ${F}/>`,
+ onde:`<ellipse cx="60" cy="66" rx="30" ry="26" ${S} stroke-width="3.5"/>`,
+ aura:`<ellipse cx="60" cy="66" rx="30" ry="26" ${S} stroke-width="9"/><path d="M36 46 Q60 38 84 46" stroke="#fff7" stroke-width="2" fill="none"/>`,
+ lien:`<g ${S} stroke-width="3">${[0,1,2,3,4,5].map(i=>`<ellipse cx="${22+i*15.5}" cy="${72-Math.sin(i/5*Math.PI)*22}" rx="9" ry="5.5"/>`).join('')}</g>`,
+ horizon:`<ellipse cx="60" cy="64" rx="38" ry="26" ${S} stroke-width="7"/>`};
+ return `<svg width="${size}" height="${size}" viewBox="0 0 120 120" role="img" aria-label="Visuel illustratif">${defs}${B[id]||''}</svg>`;
+}
+function tabIcon(t){return {home:'home',map:'map',alerts:'bell',jewels:'gem',profile:'user'}[t]}
+
+/* ============ Écrans : Porteur / Aidant ============ */
+function screenHome(){
+ const b=battery(),low=b<=20,conn=connected();
+ let h=`<img class="logo-ban" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E. — Never Alone Everywhere : cage ouverte et oiseau doré"><div style="margin-top:12px"><div class="sub">Bonjour</div><h1 class="serif">Camille</h1></div>`;
+ if(state.testMode) h+=`<div class="banner info" role="status">${ic('shield',18)}<div><b>Mode test activé</b>Aucun destinataire réel. Les alertes restent entre vous et le prototype.</div></div>`;
+ if(!conn) h+=`<div class="banner err" role="alert">${ic('bt',18)}<div><b>Bijou déconnecté</b>Un appui ne pourra pas être transmis. Rapprochez le bijou du téléphone. Appelez le 112 en cas de danger.</div></div>`;
+ if(low) h+=`<div class="banner warn" role="alert">${ic('alert',18)}<div><b>Batterie faible (${b} %)</b>Rechargez le bijou bientôt. Il reste utilisable.</div></div>`;
+ if(state.sim.network) h+=`<div class="banner err" role="alert">${ic('wifioff',18)}<div><b>Réseau indisponible</b>Une alerte N.A.E. ne partira pas. L’appel vocal au 112 reste possible si le réseau mobile voix passe.</div></div>`;
+ if(state.sim.gps) h+=`<div class="banner warn" role="alert">${ic('pinoff',18)}<div><b>Localisation inaccessible</b>Une alerte partira sans position : les aidants proches ne pourront pas être ciblés.</div></div>`;
+ h+=`<div class="card"><div class="row">${battGauge(b)}<div class="grow"><div style="font-weight:600">${esc(state.jewel.name)}</div>
+ <div class="chips" style="margin:6px 0">${conn?chip('ok','check','Connecté'):chip('err','x','Déconnecté')}${low?chip('warn','alert','Batterie faible'):chip('mut','check','Batterie correcte')}</div>
+ <div class="sub small">${ic('clock',12)} Dernière synchro : ${lastSync()}</div></div></div></div>`;
+ h+=`<h2>Simulateur du bijou</h2><div class="card" style="text-align:center">
+ <div class="small sub">Démo : ce bouton remplace le bouton caché du bijou.</div>
+ <button class="jbtn" data-hold="1" aria-label="Bouton du bijou : toucher brièvement pour une pression courte, maintenir 2 secondes pour une pression prolongée">
+ <svg class="ring" viewBox="0 0 166 166"><circle cx="83" cy="83" r="78" fill="none" stroke="#B82A16" stroke-width="5" stroke-dasharray="490" stroke-dashoffset="490" stroke-linecap="round" id="holdring"/></svg>
+ ${ic('gem',34)}<span>Appuyer</span><small>Touchez = court · maintenez 2 s = prolongé</small></button>
+ <div class="row" style="gap:8px"><button class="btn ghost sm grow" data-a="short">Pression courte</button><button class="btn ghost sm grow" data-a="long">Pression prolongée</button></div></div>`;
+ h+=`<div class="card"><div class="row between"><div class="grow"><b>Mode test</b><div class="sub small">Essayez sans prévenir personne.</div></div><button class="sw" role="switch" aria-checked="${state.testMode}" aria-label="Mode test" data-a="test"></button></div></div>`;
+ const act=state.alerts.filter(a=>a.mine&&!a.date&&['sending','sent'].includes(a.status));
+ h+=`<h2>Alertes en cours</h2>`;
+ if(!act.length) h+=`<div class="card sub">Aucune alerte en cours.</div>`;
+ act.forEach(a=>{h+=`<div class="card"><div class="row between"><b>${a.kind==='long'?'Pression prolongée':'Pression courte'} ${a.test?'· TEST':''}</b>${statusChip(a.status)}</div><div class="sub small" style="margin:6px 0">Envoyée à ${hm(a.ts||0)} · ${a.helpers} aidant(s) prévenu(s) · ${a.responders} réponse(s)</div><button class="btn ghost sm" data-a="safe" data-id="${a.id}">${ic('check',16)} Je suis en sécurité</button></div>`});
+ return h;
+}
+function statusChip(s){
+ return {sending:chip('info','refresh','Envoi en cours'),sent:chip('ok','check','Reçue par N.A.E.'),failed:chip('err','x','Échec d’envoi'),cancelled:chip('mut','x','Annulée'),resolved:chip('ok','shield','Terminée — en sécurité')}[s]||'';
+}
+function screenHelper(){
+ let h=`<img class="logo-sm" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E."><div class="row between" style="margin-top:8px"><div><div class="sub">Rôle démo</div><h1 class="serif">Aidant à proximité</h1></div></div>`;
+ h+=`<div class="card"><div class="row between"><div class="grow"><b>Je suis aidant volontaire</b><div class="sub small">Recevoir les alertes dans un rayon de ${state.prefs.radius} m.</div></div><button class="sw" role="switch" aria-checked="${state.prefs.helper}" aria-label="Aidant volontaire" data-a="pref" data-k="helper"></button></div></div>`;
+ h+=`<div class="banner info">${ic('shield',18)}<div><b>Votre sécurité d’abord</b>Ne vous approchez pas. Ne confrontez personne. Prévenez le personnel ou les secours.</div></div>`;
+ h+=`<h2>Alertes à proximité</h2>`;
+ const list=state.alerts.filter(a=>['sent','cancelled'].includes(a.status)&&!a.date);
+ if(!list.length) h+=`<div class="card sub">Aucune alerte reçue. Utilisez « Simuler une alerte reçue » ou lancez une pression courte côté Porteur.</div>`;
+ list.forEach(a=>{h+=`<button class="card" style="width:100%;text-align:left" data-a="helperOpen" data-id="${a.id}"><div class="row between"><b>${a.test?'TEST · ':''}Alerte à proximité</b>${a.status==='cancelled'?chip('mut','x','Annulée'):chip('err','alert','Active')}</div><div class="sub small" style="margin-top:4px">${a.zone?esc(a.zone.approx):'Zone non communiquée'} · ${hm(a.ts)}</div></button>`});
+ h+=`<button class="btn gold" data-a="simIncoming">${ic('bell',18)} Simuler une alerte reçue</button>`;
+ return h;
+}
+function screenMap(){
+ const f=state.mapFilter;
+ const ok=e=>(f.type==='all'||e.type===f.type)&&(f.date==='all'||(f.date==='today'&&e.date==='2026-11-09')||(f.date==='weekend'&&['2026-11-14','2026-11-15'].includes(e.date))||(f.date==='month'&&e.date.startsWith('2026-11')));
+ const list=state.events.filter(ok);
+ const fc=(k,v,l)=>`<button class="fchip" aria-pressed="${f[k]===v}" data-a="mf" data-k="${k}" data-v="${v}">${l}</button>`;
+ let h=`<h1 class="serif" style="margin-top:6px">Événements partenaires</h1><div class="sub small">Carte publique : aucune donnée d’alerte n’y apparaît.</div>`;
+ h+=`<div class="chips" style="margin:10px 0 6px">${fc('date','all','Toutes dates')}${fc('date','today','Aujourd’hui')}${fc('date','weekend','Ce week-end')}${fc('date','month','Ce mois')}</div>`;
+ h+=`<div class="chips" style="margin-bottom:10px">${fc('type','all','Tous types')}${fc('type','Festival','Festival')}${fc('type','Concert','Concert')}${fc('type','Boîte de nuit','Boîte de nuit')}</div>`;
+ const showMe=!state.sim.gps&&state.prefs.loc==='alert_map';
+ h+=`<div class="mapbox"><svg viewBox="0 0 360 330" width="100%" role="img" aria-label="Carte stylisée des événements partenaires"><rect width="360" height="330" fill="#3E4228"/><path d="M-10 120 C80 90 140 150 230 120 S350 100 380 130 L380 160 C340 140 270 160 230 150 S90 120 -10 150z" fill="#5E7C75"/><rect x="230" y="190" width="90" height="60" rx="10" fill="#4F5A33"/><g stroke="#5C6140" stroke-width="7" fill="none"><path d="M0 70 H360M0 210 H360M0 290 H360M60 0 V330M170 0 V330M290 0 V330"/></g><g stroke="#5C6140" stroke-width="3" fill="none"><path d="M0 30 L360 270M360 20 L0 300"/></g>
+ ${showMe?`<circle cx="160" cy="176" r="16" fill="#9C7E4533"/><circle cx="160" cy="176" r="6" fill="#E5D3A6" stroke="#F5F0E6" stroke-width="2"/><text x="172" y="196" font-size="10" fill="#F5F0E6">Vous (approx.)</text>`:''}
+ ${list.map((e,i)=>`<g class="pin" tabindex="0" role="button" aria-label="${esc(e.name)}, ${esc(e.type)}, ${esc(e.dateLbl)}" data-a="openEvent" data-id="${e.id}"><circle class="r" cx="${e.x}" cy="${e.y}" r="13" fill="#E5D3A6" stroke="#43472D" stroke-width="2.5"/><text x="${e.x}" y="${e.y+4}" text-anchor="middle" font-size="12" font-weight="700" fill="#1D1E21">${state.events.indexOf(e)+1}</text></g>`).join('')}
+ </svg></div>`;
+ h+=`<h2>${list.length} événement(s)</h2>`;
+ if(!list.length) h+=`<div class="card sub">Aucun événement pour ces filtres.</div>`;
+ list.forEach(e=>{const av=evAvail(e);h+=`<button class="card" style="width:100%;text-align:left" data-a="openEvent" data-id="${e.id}"><div class="row between"><b>${state.events.indexOf(e)+1}. ${esc(e.name)}</b>${ic('chev',16)}</div><div class="sub small">${esc(e.type)} · ${esc(e.dateLbl)} · ${esc(e.hours)}</div><div class="small" style="margin-top:6px">${av} / ${e.total} bracelets disponibles</div></button>`});
+ return h;
+}
+const CHG='Chargeur à induction inclus';
+const money=n=>n+' €';
+function cartLines(){const L=state.cart.map(c=>{const p=PRODUCTS.find(x=>x.id===c.id);return {p,qty:c.qty,sub:p.price*c.qty}});return {L,count:L.reduce((a,l)=>a+l.qty,0),total:L.reduce((a,l)=>a+l.sub,0)}}
+const F=(k,label,o={})=>`<label class="fld"><span>${label}</span><input data-f="${k}" type="${o.t||'text'}" ${o.ac?`autocomplete="${o.ac}"`:''} ${o.m?`inputmode="${o.m}"`:''} value="${esc(state.form[k]||'')}" ${o.ph?`placeholder="${o.ph}"`:''}></label>`;
+function layerTop(t,back){return `<div class="row" style="margin-bottom:10px"><button class="row" data-a="${back}" aria-label="Retour" style="min-height:44px">${ic('back',22)}<span>Retour</span></button></div><h1 class="serif" style="font-size:28px;margin-bottom:6px">${t}</h1>`}
+function welcomeView(){
+ return `<div class="welcome" role="dialog" aria-modal="true" aria-label="Bienvenue"><div class="wcard"><img class="logo-ban" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E. — Never Alone Everywhere : cage ouverte et oiseau doré"><h1 class="serif" style="font-size:26px;text-align:center">Bienvenue</h1><p class="sub" style="text-align:center;margin:4px 0 8px">Un geste discret, une aide à portée.</p>
+ <button class="btn gold" data-a="authOpen" data-m="login">Se connecter</button><button class="btn" data-a="authOpen" data-m="register">S’inscrire</button><button class="btn ghost" data-a="welcomeGuest">Continuer en mode invité</button></div></div>`;
+}
+function authView(){
+ const reg=state.auth==='register';
+ return `<div class="layer" style="z-index:47"><div class="body">${layerTop(reg?'Créer un compte':'Se connecter','authClose')}
+ <div class="banner info" style="margin-top:8px">${ic('info',18)}<div class="small"><b>Prototype</b>La connexion est simulée. N’entrez pas de vrais identifiants : rien n’est envoyé ni enregistré.</div></div>
+ ${state.formErr?`<div class="banner err" role="alert">${ic('alert',18)}<div>${state.formErr}</div></div>`:''}
+ ${reg?F('prenom','Prénom',{ac:'given-name'})+F('nom','Nom',{ac:'family-name'}):''}${F('email','E-mail',{t:'email',ac:'email',m:'email'})}${F('pwd','Mot de passe (simulé)',{t:'password',ac:'off'})}
+ ${reg?`<button class="row" role="checkbox" aria-checked="${!!state.form.cgu}" data-a="cgu" style="margin-top:12px;min-height:44px;text-align:left"><span class="sw" style="width:26px;height:26px;${state.form.cgu?'background:var(--fg)':''}" aria-hidden="true"></span><span class="small">J’accepte les conditions d’utilisation (fictives).</span></button>`:''}
+ <button class="btn gold" data-a="authSubmit">${reg?'Créer mon compte':'Se connecter'}</button>
+ <button class="btn ghost" data-a="authSwitch">${reg?'J’ai déjà un compte':'Créer un compte'}</button>
+ ${state.session===null?'<button class="btn ghost" data-a="welcomeGuest">Continuer en mode invité</button>':''}</div></div>`;
+}
+function cartLayer(){
+ const v=state.cartView,{L,count,total}=cartLines();let b='';
+ if(v==='cart'){
+  b=layerTop('Panier','closeCart');
+  if(!L.length) b+=`<div class="card" style="text-align:center;margin-top:12px">${ic('cart',34)}<p style="margin:8px 0">Votre panier est vide.</p></div><button class="btn gold" data-a="closeCart">Voir la collection</button>`;
+  else{
+   b+=`<div class="sub small">${count} article${count>1?'s':''}</div>`+L.map(l=>`<div class="crow"><img src="${l.p.photo}" alt="${esc(l.p.name)}"><div class="grow"><b class="serif" style="font-size:18px">${l.p.name}</b><div class="sub small">${l.p.finLbl}</div><div class="small" style="margin:2px 0 6px">${ic('power',13)} ${CHG}</div>
+   <div class="row between"><div class="qty" role="group" aria-label="Quantité ${esc(l.p.name)}"><button data-a="cartQty" data-id="${l.p.id}" data-d="-1" aria-label="Moins">−</button><span aria-live="polite">${l.qty}</span><button data-a="cartQty" data-id="${l.p.id}" data-d="1" aria-label="Plus">+</button></div><b>${money(l.sub)}</b></div>
+   <button class="sub small" style="text-decoration:underline;min-height:36px" data-a="cartDel" data-id="${l.p.id}">Supprimer</button></div></div>`).join('')+
+   `<div class="card" style="margin-top:12px"><div class="row between"><span>Sous-total</span><b>${money(total)}</b></div><div class="row between sub small" style="margin-top:4px"><span>Livraison (simulée)</span><span>Offerte</span></div><div class="row between" style="margin-top:8px;font-size:18px"><b>Total</b><b>${money(total)}</b></div><div class="sub small" style="margin-top:6px">Chargeur à induction inclus avec chaque bijou, compris dans le prix.</div></div>
+   <button class="btn gold" data-a="goCheckout">Commander</button><button class="btn ghost" data-a="closeCart">Continuer mes achats</button>`;
+  }
+ } else if(v==='checkout'){
+  b=layerTop('Commander','backCart');
+  b+=`<div class="banner info" style="margin-top:8px">${ic('info',18)}<div class="small"><b>${state.session==='user'?'Compte connecté':'Commande en mode invité'}</b>Aucun paiement réel : cette commande est simulée.</div></div>
+  ${state.formErr?`<div class="banner err" role="alert">${ic('alert',18)}<div>${state.formErr}</div></div>`:''}
+  <h2>Coordonnées</h2>${F('prenom','Prénom',{ac:'given-name'})}${F('nom','Nom',{ac:'family-name'})}${F('email','E-mail',{t:'email',ac:'email',m:'email'})}${F('tel','Téléphone (facultatif)',{t:'tel',ac:'tel',m:'tel'})}
+  <h2>Adresse de livraison</h2>${F('rue','Adresse',{ac:'street-address'})}${F('cp','Code postal',{m:'numeric',ac:'postal-code'})}${F('ville','Ville',{ac:'address-level2'})}${F('pays','Pays',{ac:'country-name'})}
+  <h2>Récapitulatif</h2><div class="card">${L.map(l=>`<div class="row between small" style="padding:4px 0"><span>${l.qty} × ${l.p.name}</span><b>${money(l.sub)}</b></div>`).join('')}<div class="line" style="padding:8px 0">${ic('power',18)}<div class="small"><b>${CHG}</b><br>avec chaque bijou, compris dans le prix</div></div><div class="row between" style="font-size:18px"><b>Total</b><b>${money(total)}</b></div></div>
+  <button class="btn gold" data-a="placeOrder">Confirmer la commande (simulée)</button>`;
+ } else if(v==='confirm'){
+  const o=state.order;
+  b=`<div class="badge ok" style="margin-top:10px">${ic('check',44)}</div><h1 class="serif" style="text-align:center;font-size:28px" role="status">Commande confirmée</h1><p class="sub" style="text-align:center;margin:4px 0 12px">Simulation : aucun paiement n’a été effectué.</p>
+  <div class="card"><div class="row between"><span class="sub">Numéro</span><b>${o.no}</b></div><div class="row between" style="margin-top:4px"><span class="sub">Livraison</span><span>${esc(o.name)}</span></div><div class="small sub" style="margin-top:2px">${esc(o.addr)}</div><div class="small" style="margin-top:2px">Livraison estimée : 3 à 5 jours ouvrés (simulée)</div></div>
+  <div class="card">${o.lines.map(l=>`<div class="row between small" style="padding:4px 0"><span>${l.qty} × ${l.name}</span><b>${money(l.sub)}</b></div>`).join('')}<div class="line" style="padding:8px 0">${ic('power',18)}<div class="small"><b>${CHG}</b><br>avec chaque bijou, compris dans le prix</div></div><div class="row between" style="font-size:18px"><b>Total</b><b>${money(o.total)}</b></div></div>
+  <button class="btn gold" data-a="endOrder">Retour au catalogue</button>`;
+ }
+ return `<div class="layer" style="z-index:36"><div class="body">${b}</div></div>`;
+}
+function photoHtml(p,size){
+ if(p.photo) return `<img class="pimg" src="${p.photo}" alt="${esc(p.name)} — ${esc(p.finLbl)}" loading="lazy" width="400" height="400"><i class="ill ilw">Visuel illustratif</i>`;
+ return jewelSvg(p.id,p.fin,size)+`<i class="ill">Photo à venir</i>`;
+}
+function screenJewels(){
+ const list=PRODUCTS.filter(p=>state.prodFilter==='Tous'||p.cat===state.prodFilter);
+ const nc=cartLines().count;
+ let h=`<div class="row between" style="margin-top:6px"><h1 class="serif">La collection</h1><button class="cartbtn" data-a="openCart" aria-label="Panier, ${nc} article${nc>1?'s':''}">${ic('cart',22)}${nc?`<b>${nc}</b>`:''}</button></div><p class="sub small" style="margin-top:4px">Le principe N.A.E. : un bouton d’alerte caché dans un bijou discret.</p><div class="chips" style="margin:12px 0" role="group" aria-label="Catégories">${STYLES.map(s=>`<button class="fchip" aria-pressed="${state.prodFilter===s}" data-a="pf" data-v="${s}">${s}</button>`).join('')}</div><div class="prod">`;
+ list.forEach(p=>{h+=`<div class="pcard"><div class="ph">${photoHtml(p,120)}</div><div class="sub small">${p.cat}</div><b class="serif" style="font-size:19px;line-height:1.15;display:block">${p.name}</b><div class="sub small">${p.finLbl}</div><div style="font-weight:600;margin:4px 0 8px">${p.price} €</div><button class="btn sm" data-a="openProduct" data-id="${p.id}" style="width:100%">Voir le bijou</button></div>`});
+ return h+`</div>`;
+}
+function screenAlertsMap(){
+ const sel=state.sheet&&state.sheet.type==='cityalert'?state.sheet.id:null;
+ const pins=CITY_ALERTS.map((a,i)=>{
+  const lbl=`Alerte ${a.name?a.name:a.q}, ${a.tag}, il y a ${relMin(a)} min, ${a.st}`;
+  const ent=a.lvl==='park'?`<line x1="${a.ex_}" y1="${a.ey}" x2="${a.x}" y2="${a.y}" stroke="#E5D3A6" stroke-width="1.2" stroke-dasharray="3 3"/><rect x="${a.ex_-5}" y="${a.ey-5}" width="10" height="10" transform="rotate(45 ${a.ex_} ${a.ey})" fill="#E5D3A6" stroke="#3E3F26" stroke-width="1.5"/>`:'';
+  return ent+`<g class="pin" tabindex="0" role="button" aria-label="${esc(lbl)}" data-a="cityAlert" data-id="${a.id}"><circle class="halo" style="animation-delay:${i*0.5}s" cx="${a.x}" cy="${a.y}" r="${a.r}" fill="rgba(255,31,31,.${a.lvl==='zone'?'20':a.lvl==='park'?'25':'32'})" stroke="rgba(255,31,31,.6)" stroke-width="1" ${a.lvl==='zone'?'stroke-dasharray="4 3"':''}/><circle class="hit" cx="${a.x}" cy="${a.y}" r="${Math.max(16,sel===a.id?a.r+3:0)}" fill="transparent" stroke="${sel===a.id?'#F4ECD6':'none'}" stroke-width="2"/><circle cx="${a.x}" cy="${a.y}" r="${a.lvl==='zone'?5.5:6.5}" fill="#FF1F1F" stroke="#fff" stroke-width="1.5"/></g>`}).join('');
+ const T=(x,y,t,o={})=>`<text x="${x}" y="${y}" font-size="${o.s||10}" fill="${o.c||'#E5D3A6'}" ${o.i?'font-style="italic"':''} ${o.w?`font-weight="${o.w}"`:''} text-anchor="${o.a||'middle'}" letter-spacing="${o.l||0}" ${o.r?`transform="rotate(${o.r} ${x} ${y})"`:''}>${t}</text>`;
+ const lg=(r,t)=>`<div class="row" style="gap:8px"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="${r}" fill="rgba(255,31,31,.28)" stroke="rgba(255,31,31,.6)"/><circle cx="20" cy="20" r="4.5" fill="#FF1F1F" stroke="#fff" stroke-width="1.2"/></svg><span class="small">${t}</span></div>`;
+ let h=`<img class="logo-ban" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E. — Never Alone Everywhere : cage ouverte et oiseau doré">
+ <div class="row" style="margin:12px 0 4px"><span class="chip info" style="color:#E5D3A6">${ic('info',13)}Mode démo — Alertes simulées</span></div>
+ <h1 class="serif" style="font-size:26px;margin:6px 0 8px">Alertes à proximité</h1>
+ <div class="cmap"><svg viewBox="0 0 360 420" width="100%" role="img" aria-label="Carte fictive inspirée de Lyon avec quatre alertes simulées de précisions différentes">
+ <rect width="360" height="420" fill="#3E3F26"/>
+ <rect x="258" y="28" width="92" height="76" rx="14" fill="#4F5A33"/>${T(334,44,'Parc',{s:8,c:'#C9D2A4',a:'end'})}
+ <ellipse cx="160" cy="100" rx="58" ry="46" fill="#4A4B2E" stroke="#E5D3A6" stroke-opacity=".25"/>
+ <ellipse cx="40" cy="195" rx="52" ry="42" fill="#4A4B2E" stroke="#E5D3A6" stroke-opacity=".25"/>
+ <g stroke="#E5D3A6" stroke-opacity=".16" stroke-width="1" fill="none"><path d="M0 60H360M0 140H360M0 200H360M0 300H360M0 360H360M30 0V420M250 0V420M300 0V420M330 0V420M150 120V400M180 120V400"/><path d="M0 330L360 250M0 110L120 40"/></g>
+ <path d="M96 0C110 90 132 160 122 232C114 292 140 350 168 408" fill="none" stroke="#5E7C75" stroke-width="15" stroke-linecap="round"/>
+ <path d="M96 0C110 90 132 160 122 232C114 292 140 350 168 408" fill="none" stroke="#86A59B" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>
+ <path d="M222 0C232 80 210 170 222 252C232 322 200 362 176 410" fill="none" stroke="#5E7C75" stroke-width="17" stroke-linecap="round"/>
+ <path d="M222 0C232 80 210 170 222 252C232 322 200 362 176 410" fill="none" stroke="#86A59B" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>
+ ${T(112,160,'Saône',{i:1,s:11,r:-82})}${T(238,128,'Rhône',{i:1,s:11,r:-84})}
+ ${T(150,38,'Croix-Rousse',{s:10,w:600})}${T(172,206,'Presqu’île',{s:11,w:600,l:1})}
+ ${T(292,246,'Part-Dieu',{s:10,w:600})}${T(52,232,'Vieux Lyon',{s:10,w:600})}${T(40,168,'Fourvière',{s:9,c:'#CFC8A8'})}${T(176,392,'Confluence',{s:9,c:'#CFC8A8'})}
+ ${T(300,330,'Gerland',{s:9,c:'#CFC8A8'})}
+ ${pins}</svg></div>
+ <h2>Trois niveaux de précision</h2><div class="card" style="padding:8px 12px">${lg(9,'<b>Lieu identifié</b> : auréole resserrée, adresse affichée')}${lg(13,'<b>Parc</b> : entrée publique (◆) et zone estimée à l’intérieur')}${lg(19,'<b>Position approximative</b> : auréole large, quartier seul')}</div>
+ <div class="banner info" style="margin-top:8px">${ic('lock',18)}<div class="small"><b>Pour les alertes réelles</b>Les utilisateurs à proximité voient seulement l’adresse d’un lieu public identifié, ou une zone approximative. Les coordonnées plus fines sont réservées aux destinataires autorisés.</div></div>
+ <h2>Alertes simulées</h2>`;
+ CITY_ALERTS.forEach(a=>{h+=`<button class="card" style="width:100%;text-align:left" data-a="cityAlert" data-id="${a.id}"><div class="row between"><div class="row"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="#FF1F1F"/></svg><b>${a.name?a.type+' · '+a.q:a.q}</b></div><span class="sub small">il y a ${relMin(a)} min</span></div><div class="sub small" style="margin-top:2px">${a.ex?'Exemple '+a.ex+' · ':''}${a.tag} · ${a.st}</div></button>`});
+ return h;
+}
+function screenProfile(){
+ const sw=(k,l,sub)=>`<div class="line"><div class="grow"><b>${l}</b><div class="sub small">${sub}</div></div><button class="sw" role="switch" aria-checked="${state.prefs[k]}" aria-label="${l}" data-a="pref" data-k="${k}"></button></div>`;
+ const rad=(v,l,s)=>`<button class="line" style="width:100%;text-align:left" role="radio" aria-checked="${state.prefs.loc===v}" data-a="loc" data-v="${v}"><span class="sw" style="width:26px;height:26px;${state.prefs.loc===v?'background:var(--fg)':''}" aria-hidden="true"></span><div class="grow"><b>${l}</b><div class="sub small">${s}</div></div>${state.prefs.loc===v?ic('check',18):''}</button>`;
+ const ses=state.session,un=state.user?state.user.name:(ses==='guest'?'Invité':'Camille Laurent'),ini=un.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+ let h=`<div class="row" style="margin-top:6px"><div class="gauge" style="width:60px;height:60px"><svg width="60" height="60"><circle cx="30" cy="30" r="28" fill="none" stroke="url(#mg)" stroke-width="2"/><defs><linearGradient id="mg"><stop offset="0" stop-color="#8E7440"/><stop offset="1" stop-color="#F0E2BC"/></linearGradient></defs></svg><b style="font-size:18px">${esc(ini)}</b></div><div><h1 class="serif" style="font-size:26px">${esc(un)}</h1><div class="sub small">${ses==='user'?'Compte connecté (simulé)':ses==='guest'?'Mode invité':'Profil fictif · données de démonstration'}</div></div></div>`;
+ h+=ses==='guest'?`<div class="card" style="margin-top:12px"><b>Vous êtes en mode invité</b><div class="sub small">Connectez-vous pour retrouver vos commandes.</div><button class="btn gold" data-a="authOpen" data-m="login">Se connecter</button><button class="btn ghost" data-a="authOpen" data-m="register">Créer un compte</button></div>`:ses==='user'?`<button class="btn ghost" data-a="logout">Se déconnecter</button>`:'';
+ h+=`<h2>Informations personnelles</h2><div class="card"><div class="line"><span class="grow sub">E-mail</span>camille@exemple.test</div><div class="line"><span class="grow sub">Téléphone</span>06 00 00 00 00</div><div class="line"><span class="grow sub">Contacts de confiance</span>2 (fictifs)</div></div>`;
+ h+=`<h2>Notifications</h2><div class="card">${sw('helper','Aidant volontaire','Recevoir les alertes proches.')}${sw('nearby','Alertes à proximité','Notifications avec zone approximative.')}${sw('updates','Mises à jour d’alerte','Annulation, fin d’alerte.')}
+ <div class="line"><div class="grow"><b>Rayon : <span id="radlab">${state.prefs.radius} m</span></b><input type="range" min="200" max="1000" step="100" value="${state.prefs.radius}" data-input="radius" aria-label="Rayon en mètres" style="width:100%;accent-color:#1D1E21"></div></div></div>`;
+ h+=`<h2>Localisation</h2><div class="card" role="radiogroup" aria-label="Utilisation de la position">${rad('alert_only','Pendant une alerte seulement','Aucune position utilisée sur la carte.')}${rad('alert_map','Alerte + carte à proximité','Position approximative pour la carte.')}${rad('never','Jamais','Les alertes partent sans position.')}</div>`;
+ h+=`<h2>Historique privé des alertes</h2><div class="sub small" style="margin-bottom:6px">${ic('lock',13)} Visible par vous seul·e. Distinct du journal opérationnel des agents.</div><div class="card" style="padding:4px 14px">`;
+ const mine=state.alerts.filter(a=>a.mine);
+ mine.forEach(a=>{h+=`<button class="line" style="width:100%;text-align:left" data-a="openHistory" data-id="${a.id}"><div class="grow"><b>${a.kind==='long'?'Pression prolongée':'Pression courte'}${a.test?' · TEST':''}</b><div class="sub small">${a.date||'Aujourd’hui'} · ${a.time||hm(a.ts)}</div></div>${statusChip(a.status)}</button>`});
+ h+=`</div><h2>N.A.E.</h2><div class="card"><button class="row between" style="width:100%" data-a="story" aria-expanded="${state.story}"><b>Notre histoire et nos valeurs</b>${ic('chev',16)}</button>`;
+ if(state.story) h+=`<div class="small" style="margin-top:10px"><p class="serif" style="font-size:19px;margin-bottom:8px">Ne jamais être seul·e, où que l’on soit.</p><p>N.A.E. est née d’une idée simple : un geste discret doit suffire pour appeler à l’aide, sans se faire remarquer. Un bijou que l’on porte déjà, un bouton que personne ne voit.</p><ul style="padding-left:18px;margin-top:8px"><li><b>Discrétion</b> — rien n’est visible, rien ne sonne.</li><li><b>Prudence</b> — nous décourageons toute confrontation.</li><li><b>Entraide encadrée</b> — des aidants volontaires, jamais des justiciers.</li><li><b>Confidentialité</b> — chaque rôle ne voit que le nécessaire.</li><li><b>Honnêteté</b> — N.A.E. ne promet jamais l’intervention des secours.</li></ul></div>`;
+ h+=`</div><div class="card"><button class="row between" style="width:100%" data-a="modal" data-m="who"><b>Qui voit quoi ?</b>${ic('chev',16)}</button></div>
+ <div class="card"><button class="row between" style="width:100%" data-a="modal" data-m="hardware"><b>À valider avant un essai réel</b>${ic('chev',16)}</button></div>
+ <button class="btn ghost" data-a="replayOnb">Rejouer la première utilisation</button>`;
+ return h;
+}
+
+/* ============ Console agent ============ */
+function precLabel(p){return p<=20?['bars3','Élevée']:p<=40?['bars2','Moyenne']:['bars1','Faible']}
+function agentHeader(){
+ const e=evById('ev1');
+ return `<div class="row between" style="margin-top:6px"><div><div class="sub small">Console de sécurité</div><h1 class="serif" style="font-size:25px">${esc(e.name)}</h1><div class="sub small">${esc(e.venue)} · démo</div></div><img class="logo-sm" style="height:34px" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E."></div>
+ <div class="chips" style="margin:8px 0">${chip('warn','pin','Localisation simulée')}${chip('info','users','3 agents en service')}</div>
+ <div class="card" style="padding:10px"><div class="small sub" style="margin-bottom:6px">Démo — afficher la console en tant que :</div><div class="chips">${['lina','karim','sofia'].map(k=>`<button class="fchip" aria-pressed="${state.agentView===k}" data-a="aview" data-v="${k}">${AGENTS[k]}${k==='lina'?' (vous)':''}</button>`).join('')}</div></div>`;
+}
+function screenAgentAlerts(){
+ const L=state.evAlerts,cnt=s=>L.filter(a=>a.status===s).length,F=state.agentFilter;
+ let h=agentHeader();
+ const fc=(v,l,n)=>`<button class="fchip" aria-pressed="${F===v}" data-a="afilter" data-v="${v}">${l}${n!==undefined?' · '+n:''}</button>`;
+ h+=`<div class="chips" style="margin:8px 0">${fc('all','Toutes',L.length)}${fc('Nouvelle','Nouvelle',cnt('Nouvelle'))}${fc('Prise en charge','Prise en charge',cnt('Prise en charge'))}${fc('Résolue','Résolue',cnt('Résolue'))}${fc('Annulée','Annulée',cnt('Annulée'))}</div>`;
+ const shown=L.filter(a=>F==='all'||a.status===F);
+ if(!shown.length) h+=`<div class="card sub">Aucune alerte. Allez dans <b>Bracelets</b> pour simuler un appui, ou touchez ci-dessous.</div>`;
+ shown.forEach(a=>{
+  const [bi,bl]=precLabel(a.prec),me=state.agentView,mine=a.agent===me,fresh=Date.now()-a.born<4000;
+  const stc={Nouvelle:chip('err','alert','NOUVELLE'),'Prise en charge':chip('warn','shield','PRISE EN CHARGE'),'Résolue':chip('ok','check','RÉSOLUE'),'Annulée':chip('mut','x','ANNULÉE')}[a.status];
+  h+=`<div class="card ${fresh?'fresh':''}" ${a.status==='Nouvelle'?'style="border:2px solid #FF8E7A"':''}><div class="row between"><b>Bracelet ${a.bid}</b>${stc}</div>
+  <div class="small" style="margin:8px 0;line-height:1.7">${ic('clock',13)} ${hms(a.ts)} · ${ic('pin',13)} Dernière zone connue : <b>${esc(a.zone)}</b><br>${ic(bi,13)} Précision : <b>${bl}</b> (±${a.prec} m) · <i>localisation simulée</i><br>${ic('lock',13)} Porteur : ${a.holder==='app'?'associé à l’app — identité masquée':'anonyme (sans application)'}</div>`;
+  if(a.agent) h+=`<div class="banner info" style="margin-bottom:6px">${ic('users',16)}<div><b>Pris en charge par ${AGENTS[a.agent]}</b>à ${hms(a.tsTaken)} — visible par tous les agents</div></div>`;
+  if(a.status==='Nouvelle') h+=`<button class="btn alert" data-a="atake" data-id="${a.id}">Prendre en charge (${AGENTS[me]})</button><button class="btn ghost" data-a="acancel" data-id="${a.id}">Marquer annulée (fausse alerte)</button>`;
+  else if(a.status==='Prise en charge'){
+   if(mine) h+=`<button class="btn gold" data-a="aresolve" data-id="${a.id}">${ic('check',18)} Marquer résolue</button><button class="btn ghost" data-a="acancel" data-id="${a.id}">Marquer annulée</button>`;
+   else h+=`<button class="btn" disabled>Déjà pris en charge par ${AGENTS[a.agent]}</button><button class="btn ghost" data-a="arelay" data-id="${a.id}">Demander le relais</button>`;
+  }
+  h+=`</div>`;
+ });
+ return h;
+}
+function screenBracelets(){
+ let h=`<h1 class="serif" style="margin-top:6px">Bracelets</h1><div class="sub small">Cycle : activation → alerte → prise en charge → restitution → réutilisation.</div><div class="card" style="margin-top:10px">${ic('info',16)} <span class="small">Un bracelet s’active à l’entrée, sans application. L’association à un porteur est facultative.</span></div>`;
+ state.bracelets.forEach(b=>{
+  const sel=state.braceletSel===b.id,st={available:chip('mut','check','Disponible'),active:chip('ok','check','Activé'),alert:chip('err','alert','Alerte'),returned:chip('warn','refresh','Restitué')}[b.state];
+  h+=`<div class="card"><button class="row between" style="width:100%" data-a="brsel" data-id="${b.id}" aria-expanded="${sel}"><div class="row">${ic('band',22)}<div style="text-align:left"><b>${b.id}</b><div class="sub small">${b.event?esc(evById(b.event).name):'Hors événement'} · cycle ${b.cycles+(b.state==='active'||b.state==='alert'?1:0)}</div></div></div>${st}</button>`;
+  if(sel){
+   const steps=['Activation','Alerte','Prise en charge','Restitution','Réutilisation'];
+   h+=`<div class="stepper" role="list">${steps.map((s,i)=>`<div role="listitem" class="${i<b.progress?'done':i===b.progress?'cur':''}">${i<b.progress?'✓ ':i===b.progress?'● ':''}${s}</div>`).join('')}</div>`;
+   h+=`<div class="small sub">Porteur : ${b.holder==='app'?'associé à l’app (masqué)':b.holder==='anon'?'anonyme':'aucun'}</div>`;
+   if(b.state==='available'){
+    h+=`<div class="row between" style="margin-top:8px"><span class="small">Associer à un porteur (facultatif)</span><button class="sw" role="switch" aria-checked="${state.assoc}" aria-label="Associer à un porteur" data-a="assoc"></button></div>
+    <button class="btn gold" data-a="bract" data-id="${b.id}" data-ev="ev1">Activer pour Nuit Électro</button><button class="btn ghost" data-a="bract" data-id="${b.id}" data-ev="ev2">Activer pour Festival Lumières d’Hiver</button>`;
+   } else if(b.state==='active'){
+    h+=`<button class="btn alert" data-a="simpress" data-id="${b.id}">Simuler un appui du bracelet</button><button class="btn ghost" data-a="brreturn" data-id="${b.id}">Restituer à la sortie</button>`;
+   } else if(b.state==='alert'){
+    h+=`<div class="banner warn" style="margin-top:8px">${ic('alert',16)}<div>Alerte en cours. Clôturez-la avant la restitution.</div></div><button class="btn ghost" data-a="gotoalerts">Voir l’alerte</button>`;
+   } else h+=`<button class="btn gold" data-a="bravail" data-id="${b.id}">Remettre à disposition (nettoyage + réinitialisation)</button>`;
+   h+=`<div class="small" style="margin-top:10px"><b>Historique du bracelet</b>${b.log.length?b.log.slice().reverse().map(l=>`<div class="sub">${l[0]} — ${esc(l[1])}</div>`).join(''):'<div class="sub">Aucun événement.</div>'}</div>`;
+  }
+  h+=`</div>`;
+ });
+ return h;
+}
+function screenAgentLog(){
+ let h=`<h1 class="serif" style="margin-top:6px">Journal opérationnel</h1><div class="banner info" style="margin-top:8px">${ic('lock',16)}<div><b>Réservé aux agents du site</b>Sans identité de porteur. Distinct de l’historique privé d’un utilisateur.</div></div><div class="card" style="padding:4px 14px">`;
+ state.opsLog.slice().reverse().forEach(l=>{h+=`<div class="line" style="align-items:flex-start">${ic(l.k==='alert'?'alert':l.k==='ok'?'check':'info',16)}<div class="grow"><div class="small">${esc(l.txt)}</div><div class="sub small">${l.ts} · ${esc(l.who)}</div></div></div>`});
+ return h+`</div>`;
+}
+function screenAgentInfo(){
+ return `<h1 class="serif" style="margin-top:6px">Passerelles et précision</h1>
+ <div class="card"><b>Version matérielle (à valider)</b><p class="small" style="margin-top:6px">Des passerelles installées sur le site écoutent les bracelets en radio basse consommation. Chaque appui est relayé vers la console par le réseau privé du lieu.</p><p class="small" style="margin-top:6px">En intérieur, la zone se déduit de plusieurs passerelles qui entendent le même bracelet : on compare la force du signal reçue, puis on associe un secteur (« Hall B — Bar nord »). Moins il y a de passerelles, plus la zone est large : c’est pourquoi la précision est toujours affichée.</p></div>
+ <div class="card"><b>Dans cette démo</b><p class="small" style="margin-top:6px">Aucune passerelle réelle. Zones et précisions sont <b>simulées</b> et marquées comme telles.</p></div>
+ <div class="card"><b>Qui voit quoi</b>${whoTable()}</div>`;
+}
+function whoTable(){
+ return `<table style="margin-top:6px"><tr><th>Donnée</th><th>Porteur</th><th>Aidant</th><th>Agent</th><th>Public</th></tr>
+ <tr><td>Position précise</td><td>Oui (la sienne)</td><td>Non</td><td>Zone ± 15–60 m (événement)</td><td>Non</td></tr>
+ <tr><td>Zone approximative</td><td>Oui</td><td>~300 m</td><td>Zone nommée</td><td>Non</td></tr>
+ <tr><td>Lieu d’une alerte proche</td><td>Oui</td><td>Adresse d’un lieu public identifié, sinon zone</td><td>Selon le site</td><td>Non</td></tr>
+ <tr><td>Identité</td><td>Oui</td><td>Non</td><td>Non (ID bracelet)</td><td>Non</td></tr>
+ <tr><td>Historique</td><td>Privé</td><td>Non</td><td>Journal sans identité</td><td>Non</td></tr>
+ <tr><td>Événements partenaires</td><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr></table>`;
+}
+
+/* ============ Calques : flux d’alerte ============ */
+function hapLine(){
+ const h=state.haptic;if(!h)return '';
+ return `<div class="hap"><span class="buzz" key="${h.id}">${ic('vib',22)}</span><div><b>Bijou : ${HAP[h.p].n}</b><br><span class="sub">${HAP[h.p].d}</span></div></div>`;
+}
+function flowHeader(t,test){return `<div class="row between"><div class="sub" style="letter-spacing:.12em;text-transform:uppercase;font-size:12px">${t}</div>${test?chip('info','shield','TEST — aucun destinataire réel'):''}</div>`}
+function shortView(f){
+ const a=alertById(f.id);if(!a)return '';
+ let h=flowHeader('Alerte N.A.E. · pression courte',a.test);
+ const cancel=f.cancelLeft>0&&['sending','sent'].includes(a.status)?`<button class="btn ghost" data-a="cancelAlert">Appui accidentel ? Annuler (${f.cancelLeft} s)</button>`:'';
+ if(a.status==='sending') h+=`<div class="spin" aria-hidden="true"></div><h1 class="serif" style="text-align:center" role="status">Envoi en cours…</h1><p class="sub" style="text-align:center;margin-top:6px">Restez où vous êtes en sécurité. Vous pouvez encore annuler.</p>${hapLine()}${cancel}`;
+ else if(a.status==='sent'){
+  const msg=a.test?'Test réussi. Aucun destinataire réel n’a été notifié.':!a.zone?'Envoyée sans position. Aucun aidant proche n’a pu être ciblé. Vos 2 contacts de confiance sont prévenus.':`${a.helpers} aidants volontaires ont été prévenus. Ils voient seulement une zone approximative.`;
+  h+=`<div class="badge ok">${ic('check',44)}</div><h1 class="serif" style="text-align:center" role="status">Alerte reçue par N.A.E.</h1><p style="text-align:center;margin-top:6px">${msg}</p>${hapLine()}
+  <div class="banner info" style="margin-top:8px">${ic('shield',18)}<div><b>Restez en sécurité</b>Rejoignez un lieu public éclairé si vous le pouvez. N’affrontez personne : les aidants ne le feront pas non plus.</div></div>
+  <button class="btn alert" data-a="callpick">${ic('phone',18)} Appeler le 17 / 112 (simulé)</button><button class="btn gold" data-a="safe" data-id="${a.id}">${ic('check',18)} Je suis en sécurité</button>${cancel}
+  <button class="btn ghost" data-a="seeHelper" data-id="${a.id}">Démo : voir côté aidant</button><button class="btn ghost" data-a="closeFlow">Fermer</button>`;
+ } else if(a.status==='failed') h+=`<div class="badge err">${ic('x',44)}</div><h1 class="serif" style="text-align:center" role="alert">Échec d’envoi</h1><p style="text-align:center;margin-top:6px"><b>Votre alerte n’a pas été transmise.</b> Aucun aidant n’a été prévenu.${state.sim.network?' Réseau indisponible.':''}</p>${hapLine()}<button class="btn gold" data-a="retry" data-id="${a.id}">${ic('refresh',18)} Réessayer l’envoi</button><button class="btn alert" data-a="callpick">${ic('phone',18)} Appeler le 112 (simulé)</button><button class="btn ghost" data-a="closeFlow">Fermer</button>`;
+ else if(a.status==='cancelled') h+=`<div class="badge mut">${ic('x',44)}</div><h1 class="serif" style="text-align:center" role="status">Alerte annulée</h1><p style="text-align:center;margin-top:6px">Les aidants déjà prévenus reçoivent un message d’annulation.</p>${hapLine()}<button class="btn" data-a="closeFlow">Fermer</button>`;
+ else if(a.status==='resolved') h+=`<div class="badge ok">${ic('shield',44)}</div><h1 class="serif" style="text-align:center" role="status">Vous êtes en sécurité</h1><p style="text-align:center;margin-top:6px">L’alerte est terminée. Les aidants sont prévenus.</p><button class="btn" data-a="closeFlow">Fermer</button>`;
+ return h;
+}
+function longView(f){
+ const a=alertById(f.id);if(!a)return '';
+ const callS=f.call,n=a.status;
+ const stat1={proposed:chip('info','bell','À confirmer'),active:chip('ok','check','Accepté'),ended:chip('ok','check','Accepté'),declined:chip('mut','x','Refusé'),cancelled:chip('mut','x','Annulé')}[callS];
+ const stat2={proposed:chip('mut','clock','Non lancé'),declined:chip('mut','x','Non lancé'),cancelled:chip('mut','x','Non lancé'),active:chip('info','phone','En cours (simulé)'),ended:chip('ok','check','Terminé (simulé)')}[callS];
+ const stat3={sending:chip('info','refresh','En cours d’envoi'),sent:chip('ok','check','Envoyée'),failed:chip('err','x','Échec d’envoi'),cancelled:chip('mut','x','Annulée'),resolved:chip('ok','shield','Terminée')}[n];
+ const cancel=f.cancelLeft>0&&callS==='proposed'?`<button class="btn ghost" data-a="cancelAlert">Appui accidentel ? Tout annuler (${f.cancelLeft} s)</button>`:'';
+ let h=flowHeader('Urgence · pression prolongée',a.test)+`<h1 class="serif" style="margin:10px 0 4px">Trois étapes distinctes</h1><div class="sub small">Chaque état est indépendant des autres.</div>${hapLine()}<div class="step3" style="margin-top:8px">
+ <div class="st ${callS==='proposed'?'active':''}"><div class="n">1</div><div class="grow"><div class="row between"><b>Appel proposé</b>${stat1}</div><div class="sub small">Rien n’est composé sans votre accord.</div>
+ ${callS==='proposed'?`<button class="btn alert" data-a="callnum" data-n="17">${ic('phone',18)} Appeler le 17 (Police)</button><button class="btn alert" data-a="callnum" data-n="112">${ic('phone',18)} Appeler le 112 (Urgences)</button><button class="btn ghost" data-a="calldecline">Pas maintenant</button>`:''}</div></div>
+ <div class="st ${callS==='active'?'active':''}"><div class="n">2</div><div class="grow"><div class="row between"><b>Appel lancé</b>${stat2}</div><div class="sub small">${callS==='active'?'Appel simulé en cours — aucun appel réel.':'Simulation : aucun appel réel n’est passé.'}</div></div></div>
+ <div class="st ${n==='sending'?'active':''}"><div class="n">3</div><div class="grow"><div class="row between"><b>Alerte N.A.E. envoyée</b>${stat3}</div><div class="sub small">${n==='failed'?'Non transmise : aucun aidant ni contact prévenu.':n==='sent'?(a.test?'Test : aucun destinataire réel.':a.zone?`${a.helpers} aidants et 2 contacts de confiance prévenus.`:'Envoyée sans position à vos 2 contacts de confiance.'):n==='cancelled'?'Annulée.':'Envoi aux aidants et aux contacts…'}</div>${n==='failed'?`<button class="btn gold" data-a="retry" data-id="${a.id}">${ic('refresh',18)} Réessayer l’envoi</button>`:''}</div></div></div>
+ <div class="banner warn" style="margin-top:12px">${ic('info',18)}<div>N.A.E. ne peut pas confirmer qu’une intervention des forces de l’ordre a lieu. Si vous êtes en danger, restez en ligne avec le 17 ou le 112.</div></div>${cancel}
+ <button class="btn ghost" data-a="closeFlow">Terminer</button>`;
+ return h;
+}
+function notxView(){
+ return flowHeader('Appui non transmis')+`<div class="badge err">${ic('bt',44)}</div><h1 class="serif" style="text-align:center" role="alert">Appui non transmis</h1><p style="text-align:center;margin-top:6px">Le bijou n’est pas connecté au téléphone. Il a vibré 3 fois longuement : l’alerte n’est pas partie.</p>${hapLine()}<button class="btn alert" data-a="callpick">${ic('phone',18)} Appeler le 112 (simulé)</button><button class="btn ghost" data-a="closeFlow">Fermer</button>`;
+}
+function callOverlay(){
+ const c=state.call;if(!c)return '';
+ return `<div class="layer dark" style="z-index:70;align-items:center;justify-content:center;text-align:center;padding:30px"><div class="chips" style="margin-bottom:20px">${chip('warn','info','SIMULATION — aucun appel réel')}</div>${ic('phone',54)}<h1 class="serif" style="margin:12px 0 4px;font-size:44px">${c.num}</h1><div class="sub">${c.num==='17'?'Police secours':'Numéro d’urgence européen'}</div><div style="font-size:28px;margin:14px 0" role="timer">${pad(Math.floor(c.sec/60))}:${pad(c.sec%60)}</div><p class="small sub" style="max-width:260px">Aucune confirmation d’intervention n’est affichée par N.A.E.</p><button class="btn alert" style="max-width:260px;margin-top:20px" data-a="hangup">Raccrocher</button></div>`;
+}
+function callPickOverlay(){
+ if(!state.callPick)return '';
+ return `<div class="sheetwrap"><div class="sheet dark"><div class="grab"></div><h3 class="serif" style="font-size:24px">Quel numéro ?</h3><div class="sub small">Simulation : aucun appel réel.</div><button class="btn alert" data-a="callnum" data-n="17">Appeler le 17 (Police)</button><button class="btn alert" data-a="callnum" data-n="112">Appeler le 112 (Urgences)</button><button class="btn ghost" data-a="callpickx">Retour</button></div></div>`;
+}
+
+/* ============ Feuilles (sheets) ============ */
+function sheetHtml(){
+ const s=state.sheet;if(!s)return '';
+ let b='';
+ if(s.type==='event'){
+  const e=evById(s.id),av=evAvail(e);
+  b=`<span class="chip info">${ic('check',13)}Partenaire N.A.E.</span><h3 class="serif" style="font-size:28px;margin:8px 0">${esc(e.name)}</h3><div class="sub">${esc(e.type)}</div>
+  <div class="card" style="margin-top:12px"><div class="line">${ic('pin',18)}<div><b>${esc(e.venue)}</b><div class="sub small">${esc(e.addr)}</div></div></div><div class="line">${ic('clock',18)}<div><b>${esc(e.dateLbl)}</b><div class="sub small">${esc(e.hours)}</div></div></div>
+  <div class="line">${ic('band',18)}<div class="grow"><b>${av} / ${e.total} bracelets disponibles</b><div class="bar" style="margin-top:6px" role="progressbar" aria-valuenow="${av}" aria-valuemax="${e.total}"><i style="width:${Math.round(av/e.total*100)}%"></i></div></div></div></div>
+  <div class="banner info">${ic('shield',18)}<div><b>Bracelet sans application</b>Remis à l’entrée. Un appui prévient directement l’équipe de sécurité du lieu.</div></div>
+  <div class="sub small">Carte publique : aucune donnée d’alerte n’est affichée ici.</div><button class="btn" data-a="closeSheet">Fermer</button>`;
+ } else if(s.type==='product'){
+  const p=PRODUCTS.find(x=>x.id===s.id);
+  b=`<div class="ph" style="aspect-ratio:1;margin-bottom:12px">${photoHtml(p,170)}</div><div class="sub small">${p.cat}</div><div class="row between"><h3 class="serif" style="font-size:30px">${p.name}</h3><b style="font-size:20px">${p.price} €</b></div><div class="sub">${p.finLbl}</div><div class="row small" style="margin-top:6px;gap:6px">${ic('power',16)}<b>${CHG}</b></div><p style="margin:10px 0">${p.desc}</p><button class="btn gold" data-a="cartAdd" data-id="${p.id}">${ic('cart',18)} Ajouter au panier</button>${state.cart.length?`<button class="btn" data-a="openCart">Voir le panier (${cartLines().count})</button>`:''}
+  <div class="card"><div class="line">${ic('eye',18)}<div class="small"><b>Le principe N.A.E.</b> un bouton d’alerte caché dans le bijou</div></div><div class="line">${ic('info',18)}<div class="small sub">L’image est une illustration : elle ne montre pas l’emplacement réel du bouton. Les caractéristiques techniques du modèle (autonomie, emplacement du bouton) restent à confirmer.</div></div></div>
+  <button class="btn ghost" data-a="pairFromProduct">Associer ce bijou</button><button class="btn ghost" data-a="closeSheet">Fermer</button>`;
+ } else if(s.type==='history'){
+  const a=alertById(s.id);
+  b=`<h3 class="serif" style="font-size:26px">${a.kind==='long'?'Pression prolongée':'Pression courte'}${a.test?' · TEST':''}</h3><div class="chips" style="margin:8px 0">${statusChip(a.status)}${chip('mut','lock','Privé')}</div>
+  <div class="card"><div class="line"><span class="grow sub">Date</span>${a.date||'Aujourd’hui'} · ${a.time||hm(a.ts)}</div><div class="line"><span class="grow sub">Position enregistrée</span><span style="text-align:right">${a.zone?esc(a.zone.precise):'Aucune'}</span></div><div class="line"><span class="grow sub">Aidants prévenus</span>${a.helpers}</div><div class="line"><span class="grow sub">Réponses reçues</span>${a.responders}</div></div>
+  <div class="sub small">${ic('lock',13)} Seul·e vous voyez ceci. Les aidants n’ont jamais eu la position précise.</div><button class="btn" data-a="closeSheet">Fermer</button>`;
+ } else if(s.type==='helper'){
+  const a=alertById(s.id),can=a.status==='sent';
+  b=`${a.test?`<div class="banner info">${ic('shield',18)}<div><b>Ceci est un test</b>Aucun destinataire réel.</div></div>`:''}<h3 class="serif" style="font-size:26px">Alerte à proximité</h3>
+  <div class="chips" style="margin:8px 0">${chip('info','pin',a.zone?esc(a.zone.approx):'Zone non communiquée')}${chip('mut','clock',hm(a.ts))}${a.status==='cancelled'?chip('mut','x','Annulée par la personne'):''}</div>
+  <div class="banner warn">${ic('alert',18)}<div><b>Ne vous approchez pas seul·e. Ne confrontez personne.</b>Votre rôle : prévenir, pas intervenir.</div></div>
+  ${a.responded?`<div class="banner info" role="status">${ic('check',18)}<div><b>Réponse envoyée</b>${esc(a.responded)}. Elle reste anonyme.</div></div>`:''}
+  ${can?`<h2>Actions sûres</h2><button class="btn gold" data-a="helperAct" data-id="${a.id}" data-t="Vous avez prévenu le personnel du lieu">${ic('users',18)} Prévenir le personnel du lieu</button><button class="btn ghost" data-a="safepts">${ic('pin',18)} Rejoindre un point public sécurisé</button><button class="btn ghost" data-a="callpick">${ic('phone',18)} Appeler le 17 / 112 si danger</button><button class="btn ghost" data-a="helperAct" data-id="${a.id}" data-t="Vous ne pouvez pas aider cette fois">Je ne peux pas aider</button>`:`<div class="sub">L’alerte est annulée : vous n’avez rien à faire.</div>`}
+  <button class="btn" data-a="closeSheet" style="margin-top:14px">Fermer</button>`;
+ } else if(s.type==='cityalert'){
+  const a=CITY_ALERTS.find(x=>x.id===s.id),rel=relMin(a);
+  const head=a.lvl==='zone'?a.q:a.name;
+  let body='';
+  if(a.lvl==='place') body=`<div class="line">${ic('pin',18)}<div class="small"><b>${a.type}</b><br>${esc(a.addr)}</div></div><div class="line">${ic('bars3',18)}<div class="small"><b>Précision</b><br>${a.prec}</div></div>`;
+  else if(a.lvl==='park') body=`<div class="line">${ic('pin',18)}<div class="small"><b>${a.type} · entrée affichée</b><br>${esc(a.addr)}<br><span class="sub">Entrée publique la plus proche (◆)</span></div></div><div class="line">${ic('bars2',18)}<div class="small"><b>Position estimée à l’intérieur du parc</b><br>${a.prec}<br><span class="sub">Position approximative : distincte de l’entrée</span></div></div>`;
+  else body=`<div class="line">${ic('pin',18)}<div class="small"><b>Position approximative</b><br>Aucun lieu identifié. Quartier : ${a.q}</div></div><div class="line">${ic('bars1',18)}<div class="small"><b>Précision disponible</b><br>${a.prec}</div></div>`;
+  b=`<div class="chips" style="margin-bottom:8px"><span class="chip info" style="color:#E5D3A6">${ic('info',13)}Mode démo — Alertes simulées</span><span class="chip err" style="color:#FF8E7A">${ic('alert',13)}${a.st}</span></div>
+  <h3 class="serif" style="font-size:26px;line-height:1.1">${head}</h3><div class="sub" style="margin:4px 0 10px">${a.lvl==='zone'?a.q:a.name.split(' (')[0]} · il y a ${rel} min · ${a.st}</div>
+  <div class="card" style="padding:4px 14px">${body}<div class="line">${ic('lock',18)}<div class="small"><b>Identité de la personne</b><br>jamais affichée</div></div></div>
+  <div class="banner warn">${ic('alert',18)}<div><b>Ne vous approchez pas seul·e.</b>Prévenez le personnel du lieu ou les secours si besoin.</div></div>
+  <button class="btn" data-a="closeSheet">Fermer</button>`;
+ } else if(s.type==='safe'){
+  b=`<h3 class="serif" style="font-size:26px">Points publics proches</h3><div class="sub small">Sur le chemin, lieux éclairés et fréquentés (fictifs). N’y allez que si c’est sans risque.</div><div class="card" style="margin-top:10px">${SAFEPTS.map(p=>`<div class="line">${ic('pin',18)}<div class="grow"><b>${p.n}</b></div><span class="sub">${p.d}</span></div>`).join('')}</div><button class="btn" data-a="sheetback">Retour</button>`;
+ }
+ return `<div class="sheetwrap" data-a="sheetbg"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${b}</div></div>`;
+}
+
+/* ============ Première utilisation ============ */
+function onboardingView(){
+ const s=state.onbStep,N=6;
+ const dots=`<div class="chips" style="justify-content:center;margin:0 0 14px">${Array.from({length:N},(_,i)=>`<span style="width:${i===s?26:8}px;height:6px;border-radius:4px;background:${i<=s?'var(--fg)':'var(--ln)'}"></span>`).join('')}</div>`;
+ let b='';
+ if(s===0) b=`<div style="text-align:center;margin-top:24px"><img class="logo-ban" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E. — Never Alone Everywhere : cage ouverte et oiseau doré"><div style="margin:24px 0">${jewelSvg('luna','dore',120)}</div><h1 class="serif">Un geste discret.<br>Une aide à portée.</h1><p class="sub" style="margin-top:10px">Configurons votre bijou en quelques instants. Tout est fictif dans ce prototype.</p></div><button class="btn" data-a="onbNext">Commencer</button><button class="btn ghost" data-a="onbSkip">Passer (mode démo)</button>`;
+ else if(s===1){
+  const p=state.pairing;
+  b=`<h1 class="serif">Associer votre bijou</h1><p class="sub" style="margin:6px 0 14px">Gardez-le près du téléphone, bouton non pressé.</p>`+
+  (p==='idle'?`<div class="card" style="text-align:center">${jewelSvg('luna','dore',120)}<p class="small sub">Bluetooth requis (simulé).</p></div><button class="btn" data-a="pair">${ic('bt',18)} Rechercher mon bijou</button>`:
+   p==='scanning'?`<div class="spin" aria-hidden="true"></div><p style="text-align:center" role="status">Recherche en cours…</p>`:
+   `<div class="badge ok">${ic('check',44)}</div><h2 style="text-align:center">Bijou associé</h2><p style="text-align:center" role="status"><b>${esc(state.jewel.name)}</b><br><span class="sub">Le bijou a vibré une fois (vibration douce).</span></p><button class="btn" data-a="onbNext">Continuer</button>`);
+ } else if(s===2) b=`<h1 class="serif">Autorisations</h1><p class="sub" style="margin:6px 0 14px">Vous gardez la main. Modifiable à tout moment.</p><div class="card"><div class="line"><div class="grow"><b>Notifications</b><div class="sub small">Recevoir les alertes et retours.</div></div><button class="sw" role="switch" aria-checked="${state.permNotif}" aria-label="Notifications" data-a="perm" data-k="permNotif"></button></div><div class="line"><div class="grow"><b>Localisation</b><div class="sub small">Utilisée pendant une alerte. Un indicateur s’affiche chaque fois.</div></div><button class="sw" role="switch" aria-checked="${state.permLoc}" aria-label="Localisation" data-a="perm" data-k="permLoc"></button></div></div><button class="btn" data-a="onbNext">Continuer</button>`;
+ else if(s===3) b=`<h1 class="serif">Pression courte</h1><div class="card" style="margin-top:14px;text-align:center"><div class="badge mut" style="margin:6px auto;border-color:var(--accent);color:var(--accent)">${ic('bell',40)}</div><b>Appel à l’aide discret</b></div><ul style="padding-left:18px;margin:12px 0;font-size:14px"><li>Prévient les <b>aidants volontaires</b> proches.</li><li>Ils voient une <b>zone approximative</b>, pas votre identité.</li><li>Ils sont invités à prévenir le personnel ou les secours, <b>jamais à vous rejoindre en confrontation</b>.</li><li>Appui accidentel : annulation possible pendant 10 s.</li></ul><button class="btn" data-a="onbNext">Continuer</button>`;
+ else if(s===4) b=`<h1 class="serif">Pression prolongée</h1><div class="card" style="margin-top:14px;text-align:center"><div class="badge mut" style="margin:6px auto;border-color:var(--alert);color:var(--alert)">${ic('phone',40)}</div><b>Parcours d’appel d’urgence</b></div><ul style="padding-left:18px;margin:12px 0;font-size:14px"><li>Maintenez 2 secondes.</li><li>Le téléphone <b>propose</b> le 17 ou le 112. Vous confirmez.</li><li>Une alerte N.A.E. part en parallèle.</li><li>N.A.E. <b>ne confirme jamais</b> l’intervention des secours.</li><li>Ici : simulation, aucun appel réel.</li></ul><button class="btn" data-a="onbNext">Continuer</button>`;
+ else b=`<h1 class="serif">Faisons un essai</h1><p class="sub" style="margin:6px 0 14px">Le mode test n’envoie rien à personne.</p>${state.onbTested?`<div class="badge ok">${ic('check',44)}</div><p style="text-align:center" role="status"><b>Essai réussi</b></p><button class="btn gold" data-a="onbDone">Entrer dans N.A.E.</button>`:`<div class="card" style="text-align:center">${ic('gem',40)}<p class="small sub">Lancez une pression courte en mode test.</p></div><button class="btn gold" data-a="onbTest">Lancer l’essai (mode test)</button>`}`;
+ return `<div class="layer" style="z-index:25"><div class="body" style="padding-top:20px">${s>0?`<button class="row sub" data-a="onbBack" style="margin-bottom:6px">${ic('back',18)} Retour</button>`:''}${dots}${b}</div></div>`;
+}
+
+/* ============ Rendu principal ============ */
+function render(){
+ const ph=$('#phone');const old=ph.querySelector('.screen');
+ const key=state.role+state.tab+state.agentTab;const keep=old&&old.dataset.key===key?old.scrollTop:0;
+ ph.dataset.platform=state.platform;ph.dataset.theme='khaki';
+ const ls=locStatus();
+ let screen,tabs;
+ if(state.role==='agent'){
+  screen={alerts:screenAgentAlerts,bracelets:screenBracelets,log:screenAgentLog,info:screenAgentInfo}[state.agentTab]();
+  const T=[['alerts','Alertes','bell'],['bracelets','Bracelets','band'],['log','Journal','list'],['info','Infos','info']];
+  tabs=T.map(t=>`<button class="tab" ${state.agentTab===t[0]?'aria-current="page"':''} data-a="atab" data-v="${t[0]}">${ic(t[2],22)}${t[1]}${t[0]==='alerts'&&state.evAlerts.some(a=>a.status==='Nouvelle')?' ●':''}</button>`).join('');
+ } else {
+  const home=state.role==='aidant'?screenHelper:screenHome;
+  screen={home,map:screenMap,alerts:screenAlertsMap,jewels:screenJewels,profile:screenProfile}[state.tab]();
+  const T=[['home','Accueil'],['map','Carte'],['alerts','Alertes'],['jewels','Bijoux'],['profile','Profil']];
+  tabs=T.map(t=>`<button class="tab" ${state.tab===t[0]?'aria-current="page"':''} data-a="tab" data-v="${t[0]}">${ic(tabIcon(t[0]),22)}${t[1]}</button>`).join('');
+ }
+ let layers='';
+ if(state.role!=='agent'&&!state.onboarded) layers+=onboardingView();
+ if(state.flow){const f=state.flow;layers+=`<div class="layer dark" style="z-index:35"><div class="body">${f.type==='short'?shortView(f):f.type==='long'?longView(f):notxView()}</div></div>`}
+ layers+=sheetHtml();
+ if(state.cartView) layers+=cartLayer();
+ if(state.role!=='agent'&&state.session===null&&!state.auth) layers+=welcomeView();
+ if(state.auth) layers+=authView();
+ if(state.notif){const a=alertById(state.notif);if(a)layers+=`<button class="notif" data-a="notifOpen"><div class="row between small" style="color:var(--sub)"><span>${ic('shield',13)} N.A.E.</span><span>maintenant</span></div><b style="display:block;margin-top:2px">${a.test?'[TEST] ':''}Alerte à proximité</b><span class="small">${a.zone?esc(a.zone.approx):'Zone non communiquée'}. Quelqu’un a besoin d’aide. Ne vous approchez pas seul·e.</span></button>`}
+ layers+=callPickOverlay()+callOverlay();
+ if(state.scenario) layers+=coachHtml();
+ if(state.toast) layers+=`<div class="toast" role="status">${esc(state.toast)}</div>`;
+ ph.innerHTML=`<div class="status"><span id="clock">${hm(simSec())}</span><span class="island"></span><span class="row" style="gap:6px">${ic('bars3',16)}${state.sim.network?ic('wifioff',16):''}${state.platform==='ios'?'':''}${battSmall()}</span></div>
+ <div class="loc ${ls.k}" role="status">${ic(ls.i,15)}<span>${ls.t}</span></div>
+ <main class="screen" data-key="${key}">${screen}</main><nav class="tabbar" aria-label="Navigation">${tabs}</nav><div class="homebar"><i></i></div>${layers}`;
+ const sc=ph.querySelector('.screen');if(sc)sc.scrollTop=keep;
+ renderPanel();
+}
+function battSmall(){return `<span class="small">${connected()?'':'⚠ '}${battery()}%</span>`}
+
+/* ============ Panneau démo ============ */
+const SCN=[
+{id:'s1',t:'1 · Pression courte reçue par un aidant',d:'Le porteur alerte, l’aidant reçoit une zone approximative et des actions sûres.'},
+{id:'s2',t:'2 · Pression prolongée : appel d’urgence',d:'Appel proposé, appel lancé, alerte N.A.E. envoyée : trois états séparés.'},
+{id:'s3',t:'3 · Échec d’envoi clairement signalé',d:'Réseau coupé, échec visible, puis réessai réussi.'},
+{id:'s4',t:'4 · Alerte événementielle prise en charge',d:'Activation → alerte → prise en charge → restitution → réutilisation.'}];
+function renderPanel(){
+ const p=$('#panel');p.classList.toggle('open',state.panelOpen);
+ const seg=(k,vals)=>`<div class="seg" role="group">${vals.map(v=>`<button aria-pressed="${state[k]===v[0]}" data-a="${k==='platform'?'platform':'role'}" data-v="${v[0]}">${v[1]}</button>`).join('')}</div>`;
+ const opt=(l,k,hint)=>`<button class="opt" role="switch" aria-checked="${state.sim[k]}" data-a="sim" data-k="${k}"><span><b>${l}</b><br><small style="color:var(--sub)">${hint}</small></span><span class="chip ${state.sim[k]?'err':'mut'}">${state.sim[k]?'ACTIF':'inactif'}</span></button>`;
+ p.innerHTML=`<img class="logo-sm" style="height:46px;border-radius:10px" src="assets/logo-nae-bandeau.jpg" width="520" height="190" alt="N.A.E."><div class="small" style="color:var(--sub)">Prototype interactif · données fictives · aucune notification ni appel réel</div>
+ <h2>Plateforme</h2>${seg('platform',[['ios','iOS'],['android','Android']])}
+ <h2>Point de vue</h2>${seg('role',[['porteur','Porteur'],['aidant','Aidant'],['agent','Agent']])}
+ <h2>Scénarios guidés</h2>${SCN.map(s=>`<div class="scn"><b>${s.t}</b><span>${s.d}</span><button class="btn gold sm" style="width:100%;margin-top:8px" data-a="scn" data-id="${s.id}">${ic('play',14)} Lancer</button></div>`).join('')}
+ <h2>Simuler un incident</h2>${opt('Batterie faible','lowBattery','Bijou à 12 %')}${opt('Bijou déconnecté','ble','Bluetooth perdu')}${opt('Réseau indisponible','network','Les alertes N.A.E. échouent')}${opt('Localisation inaccessible','gps','Alerte sans position')}
+ <h2>Divers</h2><button class="btn ghost sm" style="width:100%;margin:0 0 8px" data-a="modal" data-m="launch">Instructions de lancement</button><button class="btn ghost sm" style="width:100%;margin:0 0 8px" data-a="modal" data-m="hardware">Simulé / à valider avant essai réel</button><button class="btn ghost sm" style="width:100%;margin:0 0 8px" data-a="replayOnb">Rejouer la première utilisation</button><button class="btn sm" style="width:100%;margin:0" data-a="reset">Réinitialiser la démo</button>`;
+}
+
+/* ============ Scénarios guidés ============ */
+function coachHtml(){
+ const s=state.scenario,def=SCENARIOS[s.id],st=def[s.i];
+ return `<div class="coach" role="region" aria-label="Scénario guidé"><div class="row between small"><b>Scénario ${s.id.slice(1)} · étape ${s.i+1}/${def.length}</b><button data-a="scnQuit" aria-label="Quitter le scénario">${ic('x',16)}</button></div><p style="margin:6px 0">${st.say}</p><div class="row" style="gap:8px">${s.i<def.length-1?`<button class="btn sm grow" data-a="scnNext">Étape suivante</button>`:`<button class="btn sm grow" data-a="scnQuit">Terminer</button>`}</div></div>`;
+}
+const SCENARIOS={
+s1:[
+ {say:'Vous êtes <b>Porteur</b>. Touchez le bouton du bijou (pression courte) ou « Étape suivante ».',run(){base('porteur')}},
+ {say:'Alerte envoyée. Le bijou vibre 1 fois (envoi), puis 2 fois (reçue). Annulation possible 10 s.',run(){A.short()}},
+ {say:'Vue <b>Aidant</b> : notification avec zone approximative, sans identité. Touchez-la.',run(){forceSend();closeFlowNow();setRole('aidant');const a=state.alerts.find(x=>x.mine&&x.status==='sent'&&!x.date);if(a)state.notif=a.id}},
+ {say:'Actions sûres : prévenir le personnel, point public, appel si danger. Aucune ne demande de s’approcher.',run(){const a=state.alerts.find(x=>x.mine&&!x.date);if(a){state.notif=null;state.sheet={type:'helper',id:a.id}}}}],
+s2:[
+ {say:'Vous êtes <b>Porteur</b>. Maintenez le bouton du bijou 2 s, ou « Étape suivante ».',run(){base('porteur')}},
+ {say:'<b>Appel proposé</b> : rien n’est composé sans accord. L’<b>alerte N.A.E.</b> part en parallèle.',run(){A.long()}},
+ {say:'<b>Appel lancé</b> (simulation). Aucun appel réel.',run(){if(state.flow&&state.flow.type==='long'){forceSend();startCall('112')}}},
+ {say:'Appel terminé. « Alerte N.A.E. envoyée » reste un état distinct. Aucune intervention n’est confirmée.',run(){if(state.call)hangup();}}],
+s3:[
+ {say:'<b>Réseau indisponible</b> activé. Le prototype simule une coupure de données.',run(){base('porteur');state.sim.network=true}},
+ {say:'Pression courte : <b>échec d’envoi</b> signalé, 3 vibrations longues, aucun aidant prévenu.',run(){A.short();forceSend()}},
+ {say:'Réseau rétabli puis <b>réessai</b> : l’alerte est reçue.',run(){state.sim.network=false;const a=state.alerts.find(x=>x.status==='failed');if(a)A.retry({id:a.id})}}],
+s4:[
+ {say:'Vous êtes <b>Agent</b> (Lina M.). Le bracelet B-0414 est disponible : <b>activation</b> à l’entrée, sans app.',run(){base('agent');state.agentTab='bracelets';state.braceletSel='B-0414';state.assoc=false;const b=brById('B-0414');if(b.state==='available')A.bract({id:'B-0414',ev:'ev1'})}},
+ {say:'Le participant appuie : nouvelle <b>alerte</b> avec ID, heure et dernière zone connue (simulée) avec précision.',run(){state.agentTab='alerts';const b=brById('B-0414');if(b.state==='active')A.simpress({id:'B-0414'})}},
+ {say:'Vue de <b>Karim B.</b> : l’alerte est toujours « Nouvelle », il peut la prendre. Mais Lina la prend d’abord…',run(){state.agentView='karim'}},
+ {say:'Lina <b>prend en charge</b>. Karim voit « Pris en charge par Lina M. » et ne peut pas la reprendre.',run(){state.agentView='lina';const a=state.evAlerts.find(x=>x.bid==='B-0414'&&x.status==='Nouvelle');if(a)A.atake({id:a.id});state.agentView='karim'}},
+ {say:'Lina marque l’alerte <b>résolue</b>.',run(){state.agentView='lina';const a=state.evAlerts.find(x=>x.bid==='B-0414'&&x.status==='Prise en charge');if(a)A.aresolve({id:a.id})}},
+ {say:'<b>Restitution</b> à la sortie : bracelet désassocié, puis remis à disposition.',run(){state.agentTab='bracelets';state.braceletSel='B-0414';const b=brById('B-0414');if(b.state==='active')A.brreturn({id:'B-0414'});if(b.state==='returned')A.bravail({id:'B-0414'})}},
+ {say:'<b>Réutilisation</b> : B-0414 est activé pour le Festival Lumières d’Hiver (cycle 2).',run(){state.agentTab='bracelets';state.braceletSel='B-0414';const b=brById('B-0414');if(b.state==='available')A.bract({id:'B-0414',ev:'ev2'})}}]
+};
+function base(role){clearFlowsHard();state.onboarded=true;state.session=state.session||'guest';state.scenario=state.scenario;setRole(role)}
+
+/* ============ Actions métier ============ */
+function setRole(r){state.role=r;state.tab='home';state.agentTab='alerts';state.sheet=null;state.notif=null;state.callPick=false;if(r==='agent'&&state.agentView!=='lina'&&!state.scenario)state.agentView='lina'}
+function clearFlowsHard(){state.flow=null;state.call=null;state.callPick=false;state.sheet=null;state.notif=null;clearInterval(cancelTimer);clearInterval(callTimer)}
+function closeFlowNow(){state.flow=null;clearInterval(cancelTimer)}
+function pressJewel(kind){
+ if(state.flow||state.call||!state.onboarded&&!state.onbTestAllowed)return;
+ if(state.sim.ble){state.flow={type:'notx'};haptic('fail');render();return}
+ kind==='long'?A.long():A.short();
+}
+function newAlert(kind){
+ const z=zoneFor();
+ const a={id:uid('A'),kind,mine:true,test:state.testMode||(!state.onboarded),status:'sending',ts:simSec(),zone:z,helpers:0,responders:0};
+ state.alerts.unshift(a);return a;
+}
+function startCancelTimer(){
+ clearInterval(cancelTimer);
+ cancelTimer=setInterval(()=>{const f=state.flow;if(!f||!(f.cancelLeft>0)){clearInterval(cancelTimer);return}f.cancelLeft--;if(f.cancelLeft<=0)clearInterval(cancelTimer);render()},1000);
+}
+function completeSend(a){
+ if(!a||a.status!=='sending')return;
+ if(state.sim.network){a.status='failed';haptic('fail')}
+ else{a.status='sent';a.helpers=a.test||!a.zone?0:Math.max(1,Math.round(state.prefs.radius/125));if(a.zone&&!a.test&&state.prefs.helper===false){}haptic(a.kind==='long'?'received':'received');}
+ render();
+}
+function forceSend(){const a=state.alerts.find(x=>x.mine&&x.status==='sending');if(a)completeSend(a)}
+function startCall(num){
+ state.callPick=false;state.call={num,sec:0};
+ if(state.flow&&state.flow.type==='long')state.flow.call='active';
+ clearInterval(callTimer);callTimer=setInterval(()=>{if(state.call){state.call.sec++;render()}},1000);
+}
+function hangup(){
+ state.call=null;clearInterval(callTimer);
+ if(state.flow&&state.flow.type==='long')state.flow.call='ended';
+}
+function logOps(who,txt,k='info'){state.opsLog.push({ts:hms(evSec()),who,txt,k})}
+function blog(b,txt){b.log.push([hm(evSec()),txt])}
+
+const A={
+ platform(d){state.platform=d.v},
+ role(d){clearFlowsHard();setRole(d.v)},
+ tab(d){state.tab=d.v},
+ atab(d){state.agentTab=d.v},
+ panel(){state.panelOpen=!state.panelOpen},
+ sim(d){state.sim[d.k]=!state.sim[d.k]},
+ test(){state.testMode=!state.testMode},
+ pref(d){state.prefs[d.k]=!state.prefs[d.k]},
+ perm(d){state[d.k]=!state[d.k]},
+ loc(d){state.prefs.loc=d.v},
+ story(){state.story=!state.story},
+ short(){ if(state.flow||state.call)return; if(state.sim.ble){state.flow={type:'notx'};haptic('fail');return}
+  const a=newAlert('short');state.flow={type:'short',id:a.id,cancelLeft:10};haptic('sending');startCancelTimer();later(1800,()=>completeSend(a)) },
+ long(){ if(state.flow||state.call)return; if(state.sim.ble){state.flow={type:'notx'};haptic('fail');return}
+  const a=newAlert('long');state.flow={type:'long',id:a.id,cancelLeft:10,call:'proposed'};haptic('long');startCancelTimer();later(1800,()=>completeSend(a)) },
+ closeFlow(){const f=state.flow;closeFlowNow();if(f&&f.type==='short'&&!state.onboarded){const a=alertById(f.id);if(a&&a.status==='sent')state.onbTested=true}if(f&&f.type==='long'){state.call=null}},
+ cancelAlert(){const f=state.flow;if(!f)return;const a=alertById(f.id);if(!a)return;a.status='cancelled';f.cancelLeft=0;if(f.type==='long')f.call='cancelled';clearInterval(cancelTimer);haptic('cancel');toast('Alerte annulée.')},
+ retry(d){const a=alertById(d.id);if(!a)return;a.status='sending';haptic('sending');later(1500,()=>completeSend(a))},
+ safe(d){const a=alertById(d.id);if(!a)return;a.status='resolved';closeFlowNow();toast('Alerte terminée. Les aidants sont prévenus.')},
+ callpick(){state.callPick=true},callpickx(){state.callPick=false},
+ callnum(d){startCall(d.n)},
+ calldecline(){if(state.flow)state.flow.call='declined'},
+ hangup(){hangup()},
+ seeHelper(d){closeFlowNow();setRole('aidant');state.notif=d.id},
+ notifOpen(){const id=state.notif;state.notif=null;state.sheet={type:'helper',id}},
+ simIncoming(){const a={id:uid('A'),kind:'short',mine:false,test:false,status:'sent',ts:simSec(),zone:{approx:'Rue des Tilleuls · rayon ~300 m (simulé)'},helpers:0,responders:0};state.alerts.unshift(a);state.notif=a.id},
+ helperOpen(d){state.sheet={type:'helper',id:d.id}},
+ helperAct(d){const a=alertById(d.id);if(!a)return;a.responded=d.t;a.responders++;toast('Réponse envoyée de façon anonyme.')},
+ safepts(){state.sheet={type:'safe',prev:state.sheet}},
+ sheetback(){state.sheet=state.sheet.prev||null},
+ closeSheet(){state.sheet=null},
+ sheetbg(d,el,e){if(e.target===el)state.sheet=null},
+ mf(d){state.mapFilter[d.k]=d.v},
+
+ welcomeGuest(){state.session='guest';state.auth=null;state.formErr=null},
+ authOpen(d){state.auth=d.m;state.formErr=null},
+ authClose(){state.auth=null;state.formErr=null},
+ authSwitch(){state.auth=state.auth==='login'?'register':'login';state.formErr=null},
+ cgu(){state.form.cgu=!state.form.cgu},
+ authSubmit(){const f=state.form,reg=state.auth==='register';
+  if(reg&&(!f.prenom||!f.nom)){state.formErr='Indiquez votre prénom et votre nom.';return}
+  if(!f.email||!/^\S+@\S+\.\S+$/.test(f.email)){state.formErr='Indiquez une adresse e-mail valide.';return}
+  if(!f.pwd){state.formErr='Indiquez un mot de passe (simulé).';return}
+  if(reg&&!f.cgu){state.formErr='Acceptez les conditions pour continuer.';return}
+  const nm=reg?f.prenom+' '+f.nom:f.email.split('@')[0];state.user={name:nm,email:f.email};state.session='user';state.auth=null;state.formErr=null;f.pwd='';
+  if(!f.prenom&&!reg){f.prenom=nm}toast(reg?'Compte créé (simulation).':'Connecté (simulation).')},
+ logout(){state.session=null;state.user=null;state.form={}},
+ cartAdd(d){const c=state.cart.find(x=>x.id===d.id);if(c)c.qty=Math.min(9,c.qty+1);else state.cart.push({id:d.id,qty:1});toast('Ajouté au panier.')},
+ cartQty(d){const c=state.cart.find(x=>x.id===d.id);if(!c)return;c.qty=Math.max(1,Math.min(9,c.qty+(+d.d)))},
+ cartDel(d){state.cart=state.cart.filter(x=>x.id!==d.id)},
+ openCart(){state.toast=null;state.sheet=null;state.cartView='cart';state.tab='jewels'},
+ closeCart(){state.cartView=null;state.tab='jewels'},
+ backCart(){state.cartView='cart';state.formErr=null},
+ goCheckout(){state.toast=null;const f=state.form;if(state.user){f.email=f.email||state.user.email;const p=state.user.name.split(' ');f.prenom=f.prenom||p[0];f.nom=f.nom||p.slice(1).join(' ')}f.pays=f.pays||'France';state.cartView='checkout';state.formErr=null},
+ placeOrder(){state.toast=null;const f=state.form,miss=[];
+  if(!f.prenom||!f.nom)miss.push('prénom et nom');if(!f.email||!/^\S+@\S+\.\S+$/.test(f.email))miss.push('e-mail valide');
+  if(!f.rue)miss.push('adresse');if(!f.cp||!/^\d{5}$/.test(f.cp))miss.push('code postal à 5 chiffres');if(!f.ville)miss.push('ville');
+  if(miss.length){state.formErr='À compléter : '+miss.join(', ')+'.';return}
+  const {L,total}=cartLines();state.orders++;
+  state.order={no:'NAE-'+(2600+state.orders),name:f.prenom+' '+f.nom,addr:f.rue+', '+f.cp+' '+f.ville+', '+f.pays,total,lines:L.map(l=>({name:l.p.name,qty:l.qty,sub:l.sub}))};
+  state.cart=[];state.cartView='confirm';state.formErr=null},
+ endOrder(){state.cartView=null;state.order=null;state.tab='jewels'},
+ openEvent(d){state.sheet={type:'event',id:d.id}},
+ cityAlert(d){state.sheet={type:'cityalert',id:d.id}},
+ pf(d){state.prodFilter=d.v},
+ openProduct(d){state.sheet={type:'product',id:d.id}},
+ pairFromProduct(){state.sheet=null;state.onboarded=false;state.onbStep=1;state.pairing='idle'},
+ openHistory(d){state.sheet={type:'history',id:d.id}},
+ modal(d){state.modal=d.m;renderModal()},
+ onbNext(){state.onbStep++},onbBack(){state.onbStep=Math.max(0,state.onbStep-1)},
+ onbSkip(){state.onboarded=true},onbDone(){state.onboarded=true;state.testMode=false;state.onbTested=false},
+ pair(){state.pairing='scanning';later(2000,()=>{state.pairing='found';haptic('paired');render()})},
+ onbTest(){state.onbTestAllowed=true;state.testMode=true;A.short()},
+ replayOnb(){clearFlowsHard();setRole('porteur');state.onboarded=false;state.onbStep=0;state.pairing='idle';state.onbTested=false;state.panelOpen=false},
+ scn(d){clearFlowsHard();state.session=state.session||'guest';state.cartView=null;state.auth=null;state.alerts=state.alerts.filter(a=>a.date);state.evAlerts=[];const fresh=initial();state.bracelets=fresh.bracelets;state.opsLog=fresh.opsLog;state.sim={lowBattery:false,ble:false,network:false,gps:false};state.testMode=false;state.agentView='lina';state.scenario={id:d.id,i:0};state.panelOpen=false;SCENARIOS[d.id][0].run()},
+ scnNext(){const s=state.scenario;if(!s)return;s.i++;SCENARIOS[s.id][s.i].run()},
+ scnQuit(){state.scenario=null},
+ reset(){clearAll();state=initial()},
+ // Agent
+ aview(d){state.agentView=d.v},afilter(d){state.agentFilter=d.v},
+ atake(d){const a=state.evAlerts.find(x=>x.id===d.id);if(!a||a.status!=='Nouvelle'){toast('Alerte déjà prise en charge.');return}
+  a.status='Prise en charge';a.agent=state.agentView;a.tsTaken=evSec();logOps(AGENTS[a.agent],`Prend en charge l’alerte ${a.bid}`,'ok')},
+ aresolve(d){const a=state.evAlerts.find(x=>x.id===d.id);if(!a||a.agent!==state.agentView)return;a.status='Résolue';const b=brById(a.bid);if(b){b.state='active';blog(b,'Alerte résolue');}logOps(AGENTS[a.agent],`Alerte ${a.bid} résolue`,'ok')},
+ acancel(d){const a=state.evAlerts.find(x=>x.id===d.id);if(!a)return;if(a.agent&&a.agent!==state.agentView)return;a.status='Annulée';const b=brById(a.bid);if(b){b.state='active';blog(b,'Alerte annulée (fausse alerte)')}logOps(AGENTS[state.agentView],`Alerte ${a.bid} annulée`,'info')},
+ arelay(d){const a=state.evAlerts.find(x=>x.id===d.id);logOps(AGENTS[state.agentView],`Demande le relais à ${AGENTS[a.agent]} sur ${a.bid}`,'info');toast(`Demande envoyée à ${AGENTS[a.agent]}.`)},
+ brsel(d){state.braceletSel=state.braceletSel===d.id?null:d.id},
+ assoc(){state.assoc=!state.assoc},
+ gotoalerts(){state.agentTab='alerts'},
+ bract(d){const b=brById(d.id);if(!b||b.state!=='available')return;b.state='active';b.event=d.ev;b.holder=state.assoc?'app':'anon';b.progress=b.cycles>0?4:0;
+  blog(b,`Activé — ${evById(d.ev).name}${b.cycles>0?` (réutilisation, cycle ${b.cycles+1})`:''}${state.assoc?', associé à un porteur':''}`);logOps(AGENTS[state.agentView],`Active ${b.id} pour ${evById(d.ev).name}`,'info')},
+ simpress(d){const b=brById(d.id);if(!b||b.state!=='active')return;
+  const Z=[['Hall B — Bar nord',15],['Fosse — côté scène',30],['Parking P2 — sortie piétons',55],['Vestiaire — accès Est',40]];const z=Z[(uidn)%Z.length];
+  b.state='alert';b.progress=Math.max(b.progress,1);
+  const a={id:uid('EA'),bid:b.id,ts:evSec(),zone:z[0],prec:z[1],status:'Nouvelle',agent:null,holder:b.holder,born:Date.now()};
+  state.evAlerts.unshift(a);blog(b,`Appui détecté — ${z[0]} (±${z[1]} m, simulé)`);logOps('Système',`ALERTE ${b.id} — ${z[0]} (±${z[1]} m, localisation simulée)`,'alert');
+  try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}},
+ brreturn(d){const b=brById(d.id);if(!b||b.state!=='active')return;b.state='returned';b.holder=null;b.event=null;b.progress=3;blog(b,'Restitué à la sortie — désassocié du porteur');logOps(AGENTS[state.agentView],`Restitution ${b.id} — désassocié`,'info')},
+ bravail(d){const b=brById(d.id);if(!b||b.state!=='returned')return;b.state='available';b.cycles++;blog(b,`Nettoyé, réinitialisé, remis à disposition (cycle ${b.cycles})`);logOps(AGENTS[state.agentView],`${b.id} remis à disposition`,'ok')}
+};
+// A.atake etc. accept dataset-like objects; wrap click dispatcher
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-a]');if(!el)return;
+ const fn=A[el.dataset.a];if(!fn)return;
+ if(el.dataset.a==='sheetbg'&&e.target!==el)return;
+ fn(el.dataset,el,e);render();
+});
+document.addEventListener('keydown',e=>{
+ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('g.pin')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}
+});
+document.addEventListener('input',e=>{
+ const el=e.target;if(el.dataset&&el.dataset.f){state.form[el.dataset.f]=el.value;return}if(el.dataset&&el.dataset.input==='radius'){state.prefs.radius=+el.value;const l=$('#radlab');if(l)l.textContent=el.value+' m'}
+});
+/* Appui maintenu sur le bouton du bijou */
+let hold=null;
+document.addEventListener('pointerdown',e=>{
+ const el=e.target.closest('[data-hold]');if(!el)return;
+ hold={t:performance.now(),done:false,raf:0};
+ const step=()=>{if(!hold)return;const p=Math.min(1,(performance.now()-hold.t)/2000);const r=$('#holdring');if(r)r.style.strokeDashoffset=String(490*(1-p));
+  if(p>=1&&!hold.done){hold.done=true;pressJewel('long');render();return}
+  hold.raf=requestAnimationFrame(step)};
+ step();
+});
+function endHold(){
+ if(!hold)return;const h=hold;hold=null;cancelAnimationFrame(h.raf);const r=$('#holdring');if(r)r.style.strokeDashoffset='490';
+ if(!h.done&&performance.now()-h.t<2000){pressJewel('short');render()}
+}
+document.addEventListener('pointerup',endHold);document.addEventListener('pointercancel',()=>{if(hold){cancelAnimationFrame(hold.raf);hold=null}});
+
+/* ============ Modales ============ */
+function renderModal(){
+ const m=state.modal,root=$('#modalroot');
+ if(!m){root.innerHTML='';return}
+ let b='';
+ if(m==='launch') b=`<h3 class="serif">Instructions de lancement</h3>
+ <h4>Ce prototype</h4><ul><li>Page web mobile autonome : aucune installation, ouvrez simplement le lien.</li><li>Sur ordinateur : le téléphone s’affiche avec ce panneau de démo à droite.</li><li>Sur téléphone : touchez le bouton « Démo » en bas à droite. Ajoutez la page à l’écran d’accueil pour l’afficher en plein écran.</li><li>Pour commencer : lancez un <b>scénario guidé</b>, ou passez la première utilisation puis utilisez le bouton du bijou.</li></ul>
+ <h4>Passer à Expo / React Native (étape suivante)</h4><pre>npx create-expo-app@latest nae --template blank-typescript\ncd nae\nnpx expo install expo-router expo-notifications expo-location\nnpx expo start</pre><ul><li>Le Bluetooth du bijou demande un <b>development build</b> (Expo Go ne suffit pas).</li><li>Ce prototype n’est pas un projet Expo : il sert de maquette de parcours à porter.</li></ul>`;
+ else if(m==='who') b=`<h3 class="serif">Qui voit quoi ?</h3>${whoTable()}`;
+ else b=`<h3 class="serif">Simulé / à valider</h3>
+ <h4>Simulé dans ce prototype</h4><ul><li>Bouton, vibrations, batterie, Bluetooth et synchronisation du bijou.</li><li>Réseau, localisation, aidants, notifications (aucune notification réelle).</li><li>Appels au 17 et au 112 (aucun appel réel, aucune confirmation d’intervention).</li><li>Bracelets, passerelles, zones intérieures et précisions.</li><li>Événements, bijoux, prix, personnes : tous fictifs.</li></ul>
+ <h4>À valider sur le bijou</h4><ul><li>Fiabilité de l’appui court/long, prévention des faux déclenchements, latence Bluetooth, autonomie, étanchéité, conformité CE/radio.</li></ul>
+ <h4>À valider sur iOS</h4><ul><li>Bluetooth en arrière-plan et reprise après arrêt de l’app (téléphone verrouillé).</li><li>Notifications critiques (droit spécifique à demander à Apple).</li><li>Un appel d’urgence ne peut probablement pas être lancé sans geste de l’utilisateur : à tester.</li><li>Position « toujours » et revue App Store.</li></ul>
+ <h4>À valider sur Android</h4><ul><li>Service au premier plan, permissions Bluetooth et position en arrière-plan.</li><li>Économie d’énergie selon les fabricants.</li><li>Appel direct ou composeur pré-rempli pour les numéros d’urgence : comportement variable.</li><li>Revue Google Play pour la position en arrière-plan.</li></ul>
+ <h4>À valider avec les secours, le droit et les aidants</h4><ul><li>Aucune intégration officielle sans convention : N.A.E. ne remplace pas le 17 ni le 112.</li><li>Cadre juridique des aidants volontaires, abus, harcèlement, RGPD (analyse d’impact, durées de conservation).</li><li>Fiabilité et délais des notifications push.</li></ul>
+ <h4>À valider sur les sites partenaires</h4><ul><li>Passerelles : couverture réelle, précision en intérieur, réseau privé du lieu, plan de secours sans réseau.</li><li>Procédure de l’équipe de sécurité, formation, consignation.</li><li>Logistique des bracelets : distribution, restitution, désinfection, batterie, désassociation.</li></ul>`;
+ root.innerHTML=`<div class="modalwrap" data-close="1"><div class="modal" role="dialog" aria-modal="true">${b}<button class="btn" data-close="1" style="margin-top:14px">Fermer</button></div></div>`;
+}
+document.addEventListener('click',e=>{
+ const c=e.target.closest('[data-close]');
+ if(c&&(c.classList.contains('btn')||e.target===c)){state.modal=null;renderModal()}
+});
+
+/* ============ Démarrage ============ */
+render();
+setInterval(()=>{const c=$('#clock');if(c)c.textContent=hm(simSec())},15000);
+</script>
+</body>
+</html>
